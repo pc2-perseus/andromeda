@@ -1,0 +1,4 @@
+export const PROJECT_TITLE_MAX_LENGTH = 200;
+export const ABBREVIATION_MAX_LENGTH = 10;
+
+export const ABBREVIATION_ALLOWED_PATTERN = /^[A-Za-z0-9]+$/;

@@ -2,12 +2,12 @@ import React from "react";
 import { Autocomplete, TextField } from "@mui/material";
 import useJobId from "../../hooks/useJobId.ts";
 import useJobOptions from "../../hooks/useJobOptions.ts";
-import useSubmitState from "../../hooks/useSubmitState.ts";
+import useIsSubmitting from "../../hooks/useIsSubmitting.ts";
 import useValidationError from "../../hooks/useValidationError.ts";
 
 export default function JobId(): React.ReactElement {
     const { value, setValue } = useJobId();
-    const { isSubmitting } = useSubmitState();
+    const isSubmitting = useIsSubmitting();
     const error = useValidationError("jobIdInput");
     const {
         jobSuggestions,

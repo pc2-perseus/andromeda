@@ -20,21 +20,19 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import PersonIcon from "@mui/icons-material/Person";
 
 // Custom imports
-import type { AuthenticationData } from "../../../types/AuthenticationData.ts";
-import useAuthentication from "../../../contexts/authentication";
+import useAuth from "../../../hooks/useAuth.ts";
 
 export default function LoginButton(): React.ReactElement {
     const [menuAnchor, setMenuAnchor] = React.useState<HTMLElement | null>(
         null
     );
-
-    const { authData }: { authData: AuthenticationData } = useAuthentication();
+    const auth = useAuth();
     const location = useLocation();
 
     return (
         <>
             <Box sx={{ mr: 1, height: "100%", display: "flex" }}>
-                {authData.validSession ? (
+                {auth.validSession ? (
                     <IconButton
                         color="inherit"
                         onClick={(e) => setMenuAnchor(e.currentTarget)}

@@ -1,11 +1,10 @@
 import { useMemo } from "react";
-import useConfig from "../../../contexts/configuration";
 import getModuleConfig from "../../../fundamental/getModuleConfig.ts";
 import type { ModuleConfig } from "../../../types/ModuleConfig.ts";
-import type { GlobalConfiguration } from "../../../types/GlobalConfiguration.ts";
+import useConfig from "../../../hooks/useConfig.ts";
 
 export default function useClusterResourcesDangerThreshold(): number {
-    const { config }: { config: GlobalConfiguration } = useConfig();
+    const config = useConfig();
     const moduleConfig = getModuleConfig(config, "my-projects") as
         | ModuleConfig
         | undefined;

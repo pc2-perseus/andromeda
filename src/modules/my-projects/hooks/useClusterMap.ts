@@ -1,11 +1,9 @@
 import { useMemo } from "react";
-import useResources from "../../../contexts/resources";
 import type { Cluster } from "../../../types/perseus/Cluster.ts";
+import useResources from "../../../hooks/useResources.ts";
 
 export default function useClusterMap() {
-    const {
-        resourceData: { clusters },
-    } = useResources();
+    const { clusters } = useResources();
 
     return useMemo(() => {
         const map = new Map<string, Cluster>();

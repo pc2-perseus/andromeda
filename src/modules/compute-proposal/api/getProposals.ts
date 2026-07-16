@@ -7,7 +7,7 @@ export default async function getProposals(): Promise<{
     created: Project[];
     submitted: Project[];
 }> {
-    const call = await makeAPICall<{
+    const response = await makeAPICall<{
         created: Project[];
         submitted: Project[];
     }>(
@@ -17,10 +17,8 @@ export default async function getProposals(): Promise<{
         true
     );
 
-    return call.statusCode === 200 && call.value !== null
-        ? {
-              created: isoToDates(call.value.created),
-              submitted: isoToDates(call.value.submitted),
-          }
-        : { created: [], submitted: [] };
+    return {
+        created: isoToDates(response.created),
+        submitted: isoToDates(response.submitted),
+    };
 }

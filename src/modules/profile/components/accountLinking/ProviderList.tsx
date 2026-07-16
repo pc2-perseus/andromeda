@@ -9,16 +9,17 @@ type Provider = {
     linked: boolean;
 };
 
+type Message = {
+    severity: "success" | "error";
+    text: string;
+};
+
 export default function ProviderList({
     providers,
-    totalLinked,
     setMessage,
-    refresh,
 }: {
     providers: Provider[];
-    totalLinked: number;
-    setMessage: (msg: string) => void;
-    refresh: () => void;
+    setMessage: (msg: Message) => void;
 }): React.ReactElement {
     return (
         <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
@@ -26,9 +27,8 @@ export default function ProviderList({
                 <ProviderItem
                     key={provider.identifier}
                     provider={provider}
-                    totalLinked={totalLinked}
+                    totalLinked={providers.filter((p) => p.linked).length}
                     setMessage={setMessage}
-                    refresh={refresh}
                 />
             ))}
         </Box>

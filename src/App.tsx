@@ -1,5 +1,5 @@
 // React imports
-import React from "react";
+import React, { Suspense } from "react";
 import { BrowserRouter, useLocation } from "react-router-dom";
 
 // MUI imports
@@ -13,33 +13,34 @@ import Navbar from "./modules/navbar";
 import "./App.css";
 import Footer from "./modules/footer";
 import PageRouter from "./PageRouter.tsx";
-import { ConfigurationProvider } from "./contexts/configuration/ConfigurationProvider.tsx";
 import initializeTheme from "./fundamental/initializeTheme.ts";
-import { AuthenticationProvider } from "./contexts/authentication/AuthenticationProvider.tsx";
-import useAuthentication from "./contexts/authentication";
-import MaintenanceScreen from "./fundamental/MaintenanceScreen.tsx";
-import useConfig from "./contexts/configuration";
-import type { GlobalConfiguration } from "./types/GlobalConfiguration.ts";
 import GlobalAlert from "./modules/global-alert";
+import useConfigQuery from "./hooks/useConfigQuery.ts";
+import useConfig from "./hooks/useConfig.ts";
+import useResourcesQuery from "./hooks/useResourcesQuery.ts";
+import useAuth from "./hooks/useAuth.ts";
+import { QueryErrorResetBoundary } from "@tanstack/react-query";
+import { ErrorBoundary } from "react-error-boundary";
+import Loading from "./pages/Loading.tsx";
+import Error from "./pages/Error.tsx";
 
 function AppLayout({
     updateMode,
 }: {
     updateMode: (isDarkMode: boolean) => void;
 }): React.ReactElement {
+    useConfigQuery();
+    useResourcesQuery();
+    useAuth();
+
     const location = useLocation();
     const isModuleRoute = location.pathname.startsWith("/module/");
-    const { maintenance, reloadAuthData } = useAuthentication();
-    const { config }: { config: GlobalConfiguration } = useConfig();
-
-    if (maintenance) {
-        return <MaintenanceScreen onRetry={reloadAuthData} />;
-    }
+    const config = useConfig();
 
     return (
         <>
             {!isModuleRoute && <Navbar />}
-            {config.enabledModules.includes("global-alert") && <GlobalAlert />}
+            {config.enabled_modules.includes("global-alert") && <GlobalAlert />}
             <main>
                 <PageRouter />
             </main>
@@ -71,18 +72,25 @@ export default function App(): React.ReactElement {
         if (isDarkModeActive() === null) {
             setDarkMode(systemPrefersDarkMode);
         }
-    }, []);
+    }, [systemPrefersDarkMode]);
 
     return (
-        <BrowserRouter basename={import.meta.env.BASE_URL}>
-            <ConfigurationProvider>
-                <ThemeProvider theme={theme}>
-                    <AuthenticationProvider>
-                        <CssBaseline />
-                        <AppLayout updateMode={updateMode} />
-                    </AuthenticationProvider>
-                </ThemeProvider>
-            </ConfigurationProvider>
-        </BrowserRouter>
+        <ThemeProvider theme={theme}>
+            <CssBaseline />
+            <BrowserRouter basename={import.meta.env.BASE_URL}>
+                <QueryErrorResetBoundary>
+                    {({ reset }) => (
+                        <ErrorBoundary
+                            onReset={reset}
+                            fallbackRender={(props) => <Error {...props} />}
+                        >
+                            <Suspense fallback={<Loading />}>
+                                <AppLayout updateMode={updateMode} />
+                            </Suspense>
+                        </ErrorBoundary>
+                    )}
+                </QueryErrorResetBoundary>
+            </BrowserRouter>
+        </ThemeProvider>
     );
 }

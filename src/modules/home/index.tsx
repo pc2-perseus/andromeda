@@ -7,29 +7,27 @@ import { Box } from "@mui/material";
 
 // Custom imports
 import Login from "../login";
-import type { AuthenticationData } from "../../types/AuthenticationData.ts";
-import useAuthentication from "../../contexts/authentication";
 import StatusBar from "../status-bar";
-import useConfig from "../../contexts/configuration";
-import type { GlobalConfiguration } from "../../types/GlobalConfiguration.ts";
+import useConfig from "../../hooks/useConfig.ts";
+import useAuth from "../../hooks/useAuth.ts";
 
 export default function Home(): React.ReactElement {
-    const { authData }: { authData: AuthenticationData } = useAuthentication();
-    const { config }: { config: GlobalConfiguration } = useConfig();
+    const auth = useAuth();
+    const config = useConfig();
 
     const navigate = useNavigate();
 
     React.useEffect(() => {
-        if (authData.validSession) {
+        if (auth.validSession) {
             navigate("/my-projects");
         }
-    }, [authData.validSession, navigate]);
+    }, [auth.validSession, navigate]);
 
-    return authData.validSession ? (
+    return auth.validSession ? (
         <></>
     ) : (
         <Box sx={{ maxWidth: "100vw", overflowX: "hidden" }}>
-            {config.enabledModules.includes("status-bar") && (
+            {config.enabled_modules.includes("status-bar") && (
                 <Box sx={{ px: 2, my: 2 }}>
                     <StatusBar />
                 </Box>

@@ -1,9 +1,6 @@
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 import { type Project, ProjectParams } from "../../../types/perseus/Project.ts";
-import makeAPICall from "../../../api/makeAPICall.ts";
-import { HTTPMethod } from "../../../api/HTTPMethod.ts";
-import isoToDates from "../../../utils/isoToDates.ts";
 import { removeDeep, setDeep } from "../../../utils/setDeep.ts";
 import type { ScientificField } from "../../../types/perseus/ScientificField.ts";
 import type { ModuleConfig } from "../../../types/ModuleConfig.ts";
@@ -23,11 +20,10 @@ import { produce } from "immer";
 import type { Role } from "../../../types/perseus/Role.ts";
 import { projectSchema } from "../schema/project.ts";
 import { ValidationError } from "yup";
-import submitProposal from "../api/submitProposal.ts";
-import saveProposal from "../api/saveProposal.ts";
 
 interface ProjectStore {
     project: Project;
+    savedProject: Project;
 
     reset: () => void;
 
@@ -35,17 +31,8 @@ interface ProjectStore {
     validate: () => Promise<boolean>;
     validationErrors: { [key: string]: string };
 
-    isLoading: boolean;
-    load: (oid: string) => Promise<void>;
-    loadError: string | null;
-
-    isSubmitting: boolean;
-    submit: () => Promise<boolean>;
-    submitError: string | null;
-
-    isSaving: boolean;
-    save: () => Promise<string | null>;
-    saveError: string | null;
+    setProject: (project: Project) => void;
+    markSaved: (project: Project) => void;
 
     config: ModuleConfig | null;
     setConfig: (config: ModuleConfig | null) => void;
@@ -110,45 +97,62 @@ interface ProjectStore {
     setCheckbox: (id: string, value: boolean) => void;
 }
 
-const initialState = {
-    project: {
-        ...ProjectParams,
-        custom_fields: {
-            custom_abbreviation: false,
-            additional_description: {},
-            checkboxes: {},
-            funding: {
-                other: "",
-            },
-            purpose: "",
-            software: "",
-            storage_requirements: null,
-            public_approval: true,
+export const initialProject = {
+    ...ProjectParams,
+    custom_fields: {
+        custom_abbreviation: false,
+        additional_description: {},
+        checkboxes: {},
+        funding: {
             other: "",
-            pc_email: null,
-            pi_email: null,
         },
+        purpose: "",
+        software: "",
+        storage_requirements: null,
+        public_approval: true,
+        other: "",
+        pc_email: null,
+        pi_email: null,
     },
-    isValidating: false,
-    validationErrors: {},
-
-    isLoading: false,
-    loadError: null,
-
-    isSubmitting: false,
-    submitError: null,
-
-    isSaving: false,
-    saveError: null,
 };
+
+export function cloneProject(project: Project): Project {
+    return structuredClone(project) as Project;
+}
+
+export function projectsEqual(a: Project, b: Project): boolean {
+    return JSON.stringify(a) === JSON.stringify(b);
+}
+
+function createInitialState() {
+    return {
+        project: cloneProject(initialProject),
+        savedProject: cloneProject(initialProject),
+        isValidating: false,
+        validationErrors: {},
+    };
+}
 
 export const useProjectStore = create<ProjectStore>()(
     subscribeWithSelector(
         immer((set, get) => ({
-            ...initialState,
+            ...createInitialState(),
 
             reset: () => {
-                set(initialState);
+                set(createInitialState());
+            },
+
+            setProject: (project) => {
+                set({
+                    project: cloneProject(project),
+                    savedProject: cloneProject(project),
+                });
+            },
+
+            markSaved: (project) => {
+                set({
+                    savedProject: cloneProject(project),
+                });
             },
 
             validate: async () => {
@@ -184,98 +188,6 @@ export const useProjectStore = create<ProjectStore>()(
                 }
 
                 return Object.keys(errors).length === 0;
-            },
-
-            load: async (oid) => {
-                set({ isLoading: true });
-                try {
-                    const call = await makeAPICall<Project>(
-                        HTTPMethod.GET,
-                        `/perseus/service/Andromeda/compute-proposal/single?oid=${oid}`,
-                        undefined,
-                        true
-                    );
-
-                    if (call.statusCode === 200 && call.value) {
-                        const project = isoToDates(call.value);
-
-                        if (!project.custom_fields.checkboxes) {
-                            project.custom_fields.checkboxes = {};
-                        }
-
-                        set({
-                            project,
-                        });
-                    } else {
-                        set({
-                            loadError:
-                                "There was an error loading the proposal, status code: " +
-                                call.statusCode,
-                        });
-                    }
-                } catch (e) {
-                    if (e instanceof Error) {
-                        set({
-                            loadError: e.message,
-                        });
-                    }
-                } finally {
-                    set({ isLoading: false });
-                }
-            },
-
-            submit: async () => {
-                const { project } = get();
-
-                set({ isSubmitting: true, submitError: null });
-
-                try {
-                    return await submitProposal(project);
-                } catch {
-                    set({
-                        submitError:
-                            "There was an error while submitting the proposal",
-                    });
-                } finally {
-                    set({ isSubmitting: false });
-                }
-
-                return false;
-            },
-
-            save: async () => {
-                const { project, isSaving, isSubmitting } = get();
-
-                if (isSaving || isSubmitting) {
-                    return null;
-                }
-
-                // only save if the user actually changed something
-                if (shallow(project, initialState.project)) {
-                    return null;
-                }
-
-                set({ isSaving: true, saveError: null });
-
-                try {
-                    const id = await saveProposal(project);
-
-                    if (id) {
-                        set((state) => {
-                            state.project._id = id;
-                        });
-                    }
-
-                    return id;
-                } catch (e: unknown) {
-                    if (e instanceof Error) {
-                        set({ saveError: e.message });
-                    }
-                } finally {
-                    set({ isSaving: false });
-                }
-
-                return null;
             },
 
             config: null,

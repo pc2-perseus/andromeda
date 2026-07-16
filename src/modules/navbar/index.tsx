@@ -24,16 +24,14 @@ import NavbarItemButton from "./components/NavbarItemButton.tsx";
 import MobileMenuButton from "./components/MobileMenuButton.tsx";
 import getModuleNavbarItems from "./functions/getModuleNavbarItems.ts";
 import filterNavbarItemsByAuthContext from "./functions/filterNavbarItemsByAuthContext.ts";
-import type { GlobalConfiguration } from "../../types/GlobalConfiguration.ts";
-import useConfig from "../../contexts/configuration";
 import mergeDuplicateNavbarItems from "./functions/mergeDuplicateNavbarItems.ts";
 import sortNavbarItems from "./functions/sortNavbarItems.ts";
 import filterEnabledNavbarItems from "./functions/filterEnabledNavbarItems.ts";
 import LoginButton from "./components/LoginButton.tsx";
-import type { AuthenticationData } from "../../types/AuthenticationData.ts";
-import useAuthentication from "../../contexts/authentication";
 import Logo from "../../components/Logo.tsx";
 import useSave from "../compute-proposal/hooks/useSave.ts";
+import useConfig from "../../hooks/useConfig.ts";
+import useAuth from "../../hooks/useAuth.ts";
 
 const moduleNavbarItems: { [key: string]: NavbarItem[] } = getModuleNavbarItems(
     import.meta.glob<{ navbar: NavbarItem[] }>("../**/navbar.ts", {
@@ -43,9 +41,8 @@ const moduleNavbarItems: { [key: string]: NavbarItem[] } = getModuleNavbarItems(
 
 export default function Navbar(): React.ReactElement {
     const [mobileMenuOpen, setMobileMenuOpen] = React.useState<boolean>(false);
-
-    const { authData }: { authData: AuthenticationData } = useAuthentication();
-    const { config }: { config: GlobalConfiguration } = useConfig();
+    const auth = useAuth();
+    const config = useConfig();
     const { isSaving, error: saveError } = useSave();
     const [snackbarOpen, setSnackbarOpen] = React.useState<boolean>(false);
     const [snackbarMessage, setSnackbarMessage] =
@@ -68,7 +65,7 @@ export default function Navbar(): React.ReactElement {
 
     const filteredNavbarItems: NavbarItem[] = filterNavbarItemsByAuthContext(
         navbarItems,
-        authData.validSession
+        auth.validSession
     );
 
     return (
@@ -158,7 +155,9 @@ export default function Navbar(): React.ReactElement {
                             </Typography>
                         </Box>
                     )}
-                    {config.enabledModules.includes("login") && <LoginButton />}
+                    {config.enabled_modules.includes("login") && (
+                        <LoginButton />
+                    )}
                 </Toolbar>
             </AppBar>
             <Snackbar

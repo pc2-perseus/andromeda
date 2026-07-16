@@ -1,12 +1,12 @@
-import useAuthentication from "../../../contexts/authentication";
 import type { MyProject } from "../types/project.ts";
+import useAuth from "../../../hooks/useAuth.ts";
 
 export default function useIsPIorPC(project: MyProject): boolean {
-    const { authData } = useAuthentication();
+    const { oid } = useAuth();
 
     return (
-        authData.oid !== null &&
-        (authData.oid === project.principal_investigator_id ||
-            authData.oid === project.person_of_contact_id)
+        oid !== null &&
+        (oid === project.principal_investigator_id ||
+            oid === project.person_of_contact_id)
     );
 }

@@ -7,7 +7,7 @@ export default async function getUsedContingents(
     projectId: string,
     computeProjectId: string
 ): Promise<UsedContingent[]> {
-    const call = await makeAPICall<{
+    const response = await makeAPICall<{
         used: UsedContingent[];
     }>(
         HTTPMethod.GET,
@@ -16,7 +16,5 @@ export default async function getUsedContingents(
         true
     );
 
-    return call.statusCode === 200 && call.value !== null
-        ? call.value.used.map((item) => isoToDates(item))
-        : [];
+    return response.used.map((item) => isoToDates(item));
 }

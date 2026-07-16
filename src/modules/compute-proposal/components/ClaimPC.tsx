@@ -6,18 +6,18 @@ import { useParams, useSearchParams } from "react-router-dom";
 import { Alert, AlertTitle, Box, CircularProgress } from "@mui/material";
 
 // Custom imports
-import claimPC from "../api/claimPC.ts";
-import type { AuthenticationData } from "../../../types/AuthenticationData.ts";
-import useAuthentication from "../../../contexts/authentication";
+import useAuth from "../../../hooks/useAuth.ts";
+import useClaimPCMutation from "../hooks/useClaimPCMutation.ts";
 
 export default function ClaimPC(): React.ReactElement {
-    const { authData }: { authData: AuthenticationData } = useAuthentication();
+    const auth = useAuth();
     const { proposalId }: { proposalId?: string } = useParams();
 
     const [status, setStatus] = React.useState<"loading" | "error" | "success">(
         "loading"
     );
     const [searchParams] = useSearchParams();
+    const { mutate } = useClaimPCMutation();
 
     React.useEffect(() => {
         const token: string | null = searchParams.get("token");
@@ -27,10 +27,14 @@ export default function ClaimPC(): React.ReactElement {
             return;
         }
 
-        claimPC(proposalId, token).then((result: boolean) => {
-            setStatus(result ? "success" : "error");
-        });
-    }, []);
+        mutate(
+            { proposalId, token },
+            {
+                onSuccess: (result) => setStatus(result ? "success" : "error"),
+                onError: () => setStatus("error"),
+            }
+        );
+    }, [mutate, proposalId, searchParams]);
 
     return (
         <>
@@ -73,7 +77,7 @@ export default function ClaimPC(): React.ReactElement {
                 >
                     <Alert severity="success" variant="outlined">
                         <AlertTitle>
-                            Thank you {authData.person?.firstname}!
+                            Thank you {auth.person?.firstname}!
                         </AlertTitle>
                         You have been added as person of contact.
                     </Alert>

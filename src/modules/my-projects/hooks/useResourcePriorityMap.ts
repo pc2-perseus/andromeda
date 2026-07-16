@@ -1,28 +1,26 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import getResourcePriorities from "../api/getResourcePriorities.ts";
+import { useMemo } from "react";
 import type { ResourcePriority } from "../../../types/perseus/ResourcePriority.ts";
 
-export default function useResourcePriorityMap() {
-    const [resourcePriorities, setResourcePriorities] = useState<
-        ResourcePriority[]
-    >([]);
+export type ResourcePriorityInfo = {
+    label: string;
+    color: string | null;
+    textColor: string | null;
+};
 
-    const fetchResourcePriorities = useCallback(async () => {
-        try {
-            setResourcePriorities(await getResourcePriorities());
-        } catch {
-            setResourcePriorities([]);
-        }
-    }, []);
-
-    useEffect(() => {
-        fetchResourcePriorities();
-    }, [fetchResourcePriorities]);
-
+export default function useResourcePriorityMap(
+    resourcePriorities: ResourcePriority[]
+) {
     return useMemo(() => {
-        const map = new Map<number, string>();
+        const map = new Map<number, ResourcePriorityInfo>();
         resourcePriorities.forEach((resourcePriority) => {
-            map.set(resourcePriority.value, resourcePriority.priority_id);
+            map.set(resourcePriority.value, {
+                label: resourcePriority.priority_id,
+                color:
+                    resourcePriority.color ??
+                    resourcePriority.background_color ??
+                    null,
+                textColor: resourcePriority.text_color ?? null,
+            });
         });
         return map;
     }, [resourcePriorities]);

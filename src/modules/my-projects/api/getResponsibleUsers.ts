@@ -3,7 +3,7 @@ import { HTTPMethod } from "../../../api/HTTPMethod.ts";
 import type { Person } from "../../../types/perseus/Person.ts";
 
 export default async function getResponsibleUsers(projectId: string) {
-    const call = await makeAPICall<{
+    return await makeAPICall<{
         principal_investigator: Person | null;
         person_of_contact: Person | null;
     }>(
@@ -12,6 +12,4 @@ export default async function getResponsibleUsers(projectId: string) {
         undefined,
         true
     );
-
-    return call.statusCode === 200 ? call.value : null;
 }

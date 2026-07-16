@@ -26,7 +26,7 @@ export default function useUsageChartFilters({
 }) {
     const [selectedRange, setSelectedRange] =
         useState<UsageRange>(DEFAULT_USAGE_RANGE);
-    const [showFilters, setShowFilters] = useState(true);
+    const [showFilters, setShowFilters] = useState(false);
     const { users, selectedUser, setSelectedUser } = useUsageChartUserFilter({
         usage,
         enableUserFilter,

@@ -7,13 +7,20 @@ import type {
 import type { Resource } from "../../../types/perseus/Resource.ts";
 import type { ResourceValue } from "../../../types/perseus/ResourceValue.ts";
 
-type ClusterResourceItem = {
+export type ClusterResourceItem = {
     resourceId: string;
+    resourceType: Resource["resource_type"];
     name: string;
     value: number;
     max: number;
     unit: string;
     percent: number;
+};
+
+export type ClusterResourceGroup = {
+    id: string;
+    name: string;
+    resources: ClusterResourceItem[];
 };
 
 function selectPhase(
@@ -120,6 +127,7 @@ export default function useClusterResourceGroups({
             const list = grouped.get(resource.cluster_id) ?? [];
             list.push({
                 resourceId: resource.id,
+                resourceType: resource.resource_type,
                 name: resource.name,
                 value,
                 max,
@@ -133,16 +141,18 @@ export default function useClusterResourceGroups({
             clusterNameForId(left).localeCompare(clusterNameForId(right))
         );
 
-        const clusters = clusterIds.map((clusterId) => ({
-            id: clusterId,
-            name: clusterNameForId(clusterId),
-            resources:
-                grouped
-                    .get(clusterId)
-                    ?.sort((left, right) =>
-                        left.name.localeCompare(right.name)
-                    ) ?? [],
-        }));
+        const clusters: ClusterResourceGroup[] = clusterIds.map(
+            (clusterId) => ({
+                id: clusterId,
+                name: clusterNameForId(clusterId),
+                resources:
+                    grouped
+                        .get(clusterId)
+                        ?.sort((left, right) =>
+                            left.name.localeCompare(right.name)
+                        ) ?? [],
+            })
+        );
 
         return {
             clusterIds,

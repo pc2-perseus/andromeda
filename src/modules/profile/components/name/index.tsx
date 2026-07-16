@@ -11,19 +11,12 @@ import {
 } from "@mui/material";
 
 // Custom imports
-import type { AuthenticationData } from "../../../../types/AuthenticationData.ts";
-import useAuthentication from "../../../../contexts/authentication";
+import useAuth from "../../../../hooks/useAuth.ts";
 
 export default function Name(): React.ReactElement {
-    const {
-        authData,
-        loading,
-    }: {
-        authData: AuthenticationData;
-        loading: boolean;
-    } = useAuthentication();
+    const auth = useAuth();
 
-    if (loading || authData.person === null) {
+    if (auth.person === null) {
         return (
             <Box
                 sx={{
@@ -45,7 +38,7 @@ export default function Name(): React.ReactElement {
                 <Grid size={{ xs: 12, md: 2 }}>
                     <TextField
                         label="Title"
-                        value={authData.person.title ?? ""}
+                        value={auth.person.title ?? ""}
                         disabled
                         fullWidth
                         slotProps={{
@@ -58,7 +51,7 @@ export default function Name(): React.ReactElement {
                 <Grid size={{ xs: 12, md: 5 }}>
                     <TextField
                         label="Firstname"
-                        value={authData.person.firstname}
+                        value={auth.person.firstname}
                         disabled
                         fullWidth
                     />
@@ -66,7 +59,7 @@ export default function Name(): React.ReactElement {
                 <Grid size={{ xs: 12, md: 5 }}>
                     <TextField
                         label="Lastname"
-                        value={authData.person.lastname}
+                        value={auth.person.lastname}
                         disabled
                         fullWidth
                     />

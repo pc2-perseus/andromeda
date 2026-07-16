@@ -8,12 +8,10 @@ import type {
 export default async function getProjectsOverview(): Promise<
     ProjectOverviewItem[]
 > {
-    const call = await makeAPICall<ProjectOverviewResponse>(
+    const response = await makeAPICall<ProjectOverviewResponse>(
         HTTPMethod.GET,
         "/perseus/service/Andromeda/projects/overview"
     );
 
-    return call.statusCode === 200 && call.value !== null
-        ? call.value.items
-        : [];
+    return response.items;
 }

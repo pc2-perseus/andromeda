@@ -1,15 +1,12 @@
 // React imports
 import React from "react";
-import { Routes, Route, useParams } from "react-router-dom";
+import { Route, Routes, useParams } from "react-router-dom";
 
 // Custom imports
-import Error404 from "./fundamental/Error404.tsx";
+import Error404 from "./pages/Error404.tsx";
 import ProtectedRoute from "./fundamental/ProtectedRoute.tsx";
-import MaintenanceScreen from "./fundamental/MaintenanceScreen";
-import type { GlobalConfiguration } from "./types/GlobalConfiguration.ts";
-import useConfig from "./contexts/configuration";
 import type { RouteElement } from "./types/RouteElement.ts";
-import useAuthentication from "./contexts/authentication";
+import useConfig from "./hooks/useConfig.ts";
 
 const modules = import.meta.glob("./modules/*/index.tsx", { eager: false });
 
@@ -49,15 +46,7 @@ const moduleRoutesFiles = import.meta.glob<{ routes: RouteElement[] }>(
 );
 
 export default function PageRouter(): React.ReactElement {
-    const { config }: { config: GlobalConfiguration } = useConfig();
-    const {
-        maintenance,
-        reloadAuthData,
-    }: {
-        maintenance: boolean;
-        reloadAuthData: () => void;
-    } = useAuthentication();
-
+    const config = useConfig();
     const moduleRoutes: { [key: string]: RouteElement[] } = {};
 
     for (const [path, mod] of Object.entries(moduleRoutesFiles)) {
@@ -71,12 +60,10 @@ export default function PageRouter(): React.ReactElement {
 
     const routes: RouteElement[] = Object.entries(moduleRoutes).flatMap(
         ([moduleId, routes]: [string, RouteElement[]]): RouteElement[] =>
-            config.enabledModules.includes(moduleId) ? routes : []
+            config.enabled_modules.includes(moduleId) ? routes : []
     );
 
-    return maintenance ? (
-        <MaintenanceScreen onRetry={reloadAuthData} />
-    ) : (
+    return (
         <Routes>
             {routes
                 .filter((route: RouteElement) => route.element !== undefined)

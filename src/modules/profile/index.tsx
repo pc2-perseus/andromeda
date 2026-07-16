@@ -3,48 +3,37 @@ import React from "react";
 import { useSearchParams } from "react-router-dom";
 
 // MUI imports
-import { Box, Divider, Button, Typography } from "@mui/material";
+import { Alert, Box, Button, Divider, Typography } from "@mui/material";
 
 // Custom imports
-import type { AuthenticationData } from "../../types/AuthenticationData.ts";
-import useAuthentication from "../../contexts/authentication";
-import getOptions from "./api/getOptions.ts";
 import Name from "./components/name";
 import Affiliation from "./components/affiliation";
 import Nationalities from "./components/nationalities";
 import SSHKeys from "./components/SSHKeys/index.tsx";
 import AccountLinking from "./components/accountLinking/index.tsx";
 import ProfileSkeleton from "./components/ProfileSkeleton.tsx";
-
-import type { ProfileOptions } from "./types/ProfileOptions.ts";
+import useProfileOptionsQuery from "./hooks/useProfileOptionsQuery.ts";
+import Email from "./components/email/index.tsx";
+import useAuth from "../../hooks/useAuth.ts";
 
 export default function Profile(): React.ReactElement {
     const [searchParams] = useSearchParams();
-    const [loading, setLoading] = React.useState<boolean>(true);
     const [section, setSection] = React.useState(
         searchParams.get("link_status") ? "linking" : "personal"
     );
-    const {
-        authData,
-        loading: authLoading,
-    }: {
-        authData: AuthenticationData;
-        loading: boolean;
-    } = useAuthentication();
-    const [options, setOptions] = React.useState<ProfileOptions>({
-        organizations: [],
-        institutes: [],
-        nationalities: [],
-    });
+    const auth = useAuth();
+    const { data: options, isPending, isError } = useProfileOptionsQuery();
 
-    React.useEffect(() => {
-        getOptions()
-            .then((data) => setOptions(data))
-            .finally(() => setLoading(false));
-    }, []);
-
-    if (loading || authLoading || authData.person === null) {
+    if (isPending || auth.person === null) {
         return <ProfileSkeleton />;
+    }
+
+    if (isError) {
+        return (
+            <Alert severity="error">
+                There was an error fetching profile options
+            </Alert>
+        );
     }
 
     return (
@@ -150,6 +139,8 @@ export default function Profile(): React.ReactElement {
                     {section === "personal" && (
                         <>
                             <Name />
+                            <Divider />
+                            <Email />
                             <Divider />
                             <Nationalities
                                 nationalities={options.nationalities}

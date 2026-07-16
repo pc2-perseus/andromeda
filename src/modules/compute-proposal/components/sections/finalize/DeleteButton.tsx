@@ -14,14 +14,14 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 
 // Custom imports
-import deleteProposal from "../../../api/deleteProposal";
+import useDeleteProposalMutation from "../../../hooks/useDeleteProposalMutation.ts";
 
 export default function DeleteButton(): React.ReactElement | null {
     const navigate = useNavigate();
     const { proposalId }: { proposalId?: string } = useParams();
 
     const [open, setOpen] = React.useState(false);
-    const [isDeleting, setIsDeleting] = React.useState(false);
+    const deleteMutation = useDeleteProposalMutation();
 
     if (!proposalId) {
         return null;
@@ -35,14 +35,11 @@ export default function DeleteButton(): React.ReactElement | null {
     };
 
     const handleDelete = async () => {
-        setIsDeleting(true);
-        const success = await deleteProposal(proposalId);
-
-        setIsDeleting(false);
-        setOpen(false);
-        if (success) {
+        try {
+            await deleteMutation.mutateAsync(proposalId);
+            setOpen(false);
             navigate("/compute-proposal");
-        } else {
+        } catch {
             alert("Failed to delete proposal.");
         }
     };
@@ -72,7 +69,7 @@ export default function DeleteButton(): React.ReactElement | null {
                         onClick={handleDelete}
                         color="error"
                         variant="contained"
-                        disabled={isDeleting}
+                        disabled={deleteMutation.isPending}
                     >
                         {" "}
                         Delete{" "}

@@ -1,12 +1,23 @@
 import { useProjectStore } from "../store/project.ts";
-import { useShallow } from "zustand/react/shallow";
+import useSubmitProposalMutation from "./useSubmitProposalMutation.ts";
+import useIsSubmitting from "./useIsSubmitting.ts";
 
-export default () => {
-    return useProjectStore(
-        useShallow((state) => ({
-            isSubmitting: state.isSubmitting,
-            submit: state.submit,
-            error: state.submitError,
-        }))
-    );
-};
+export default function useSubmit() {
+    const project = useProjectStore((state) => state.project);
+    const submitMutation = useSubmitProposalMutation();
+    const isSubmitting = useIsSubmitting();
+
+    async function submit(): Promise<boolean> {
+        try {
+            return await submitMutation.mutateAsync(project);
+        } catch {
+            return false;
+        }
+    }
+
+    return {
+        isSubmitting,
+        submit,
+        error: submitMutation.error?.message ?? null,
+    };
+}

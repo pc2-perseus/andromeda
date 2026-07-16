@@ -1,12 +1,12 @@
 import React from "react";
 import { TextField } from "@mui/material";
 import useSubject from "../../hooks/useSubject.ts";
-import useSubmitState from "../../hooks/useSubmitState.ts";
+import useIsSubmitting from "../../hooks/useIsSubmitting.ts";
 import useValidationError from "../../hooks/useValidationError.ts";
 
 export default function Subject(): React.ReactElement {
     const { value, setValue } = useSubject();
-    const { isSubmitting } = useSubmitState();
+    const isSubmitting = useIsSubmitting();
     const error = useValidationError("subject");
 
     return (

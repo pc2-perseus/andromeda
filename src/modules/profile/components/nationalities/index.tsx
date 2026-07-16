@@ -4,6 +4,7 @@ import React from "react";
 // MUI imports
 import {
     Autocomplete,
+    Alert,
     Box,
     Button,
     TextField,
@@ -11,9 +12,8 @@ import {
 } from "@mui/material";
 
 // Custom imports
-import type { AuthenticationData } from "../../../../types/AuthenticationData.ts";
-import useAuthentication from "../../../../contexts/authentication";
-import saveNationalities from "../../api/saveNationalities.ts";
+import useAuth from "../../../../hooks/useAuth.ts";
+import useSaveNationalitiesMutation from "../../hooks/useSaveNationalitiesMutation.ts";
 
 export default function Nationalities({
     nationalities,
@@ -21,37 +21,42 @@ export default function Nationalities({
     nationalities: { name: string; iso_code: string }[];
 }): React.ReactElement {
     const [loading, setLoading] = React.useState<boolean>(true);
+    const [validationError, setValidationError] = React.useState<string | null>(
+        null
+    );
 
-    const {
-        authData,
-        reloadAuthData,
-    }: {
-        authData: AuthenticationData;
-        reloadAuthData: () => void;
-    } = useAuthentication();
+    const auth = useAuth();
+    const saveMutation = useSaveNationalitiesMutation();
 
     const [selectedNationalities, setSelectedNationalities] = React.useState<
         string[]
     >([]);
 
     function updateNationalities() {
-        if (selectedNationalities.length > 0) {
-            saveNationalities(selectedNationalities).then((result: boolean) => {
-                if (result) {
-                    reloadAuthData();
-                }
-            });
+        setValidationError(null);
+        if (selectedNationalities.length === 0) {
+            setValidationError("Please select at least one nationality.");
+            return;
         }
+
+        saveMutation.mutate(selectedNationalities);
     }
 
     React.useEffect(() => {
-        setSelectedNationalities(authData.person?.nationalities ?? []);
+        setSelectedNationalities(auth.person?.nationalities ?? []);
         setLoading(false);
-    }, [authData]);
+    }, [auth]);
 
-    if (loading || authData.person === null) {
+    if (loading || auth.person === null) {
         return <></>;
     }
+
+    const originalNationalities = auth.person.nationalities ?? [];
+    const isUnchanged =
+        selectedNationalities.length === originalNationalities.length &&
+        selectedNationalities.every((val) =>
+            originalNationalities.includes(val)
+        );
 
     return (
         <>
@@ -60,11 +65,17 @@ export default function Nationalities({
                 To ensure the appropriate execution of export control
                 procedures, we require your nationalities.
             </Typography>
+            {saveMutation.isError && (
+                <Alert severity="error">
+                    There was an error saving your nationalities.
+                </Alert>
+            )}
             <Autocomplete
                 value={selectedNationalities}
-                onChange={(_e, newValues: string[]) =>
-                    setSelectedNationalities(newValues)
-                }
+                onChange={(_e, newValues: string[]) => {
+                    setSelectedNationalities(newValues);
+                    if (newValues.length > 0) setValidationError(null);
+                }}
                 options={nationalities
                     .sort((n1, n2) => n1.name.localeCompare(n2.name))
                     .map((n) => n.iso_code)}
@@ -73,7 +84,12 @@ export default function Nationalities({
                         ?.name ?? ""
                 }
                 renderInput={(params) => (
-                    <TextField {...params} label="Nationalities" />
+                    <TextField
+                        {...params}
+                        label="Nationalities"
+                        error={Boolean(validationError)}
+                        helperText={validationError}
+                    />
                 )}
                 multiple
             />
@@ -81,10 +97,7 @@ export default function Nationalities({
                 <Button
                     variant="contained"
                     sx={{ float: "right" }}
-                    disabled={
-                        selectedNationalities.length === 0 ||
-                        selectedNationalities === authData.person.nationalities
-                    }
+                    disabled={saveMutation.isPending || isUnchanged}
                     onClick={updateNationalities}
                 >
                     Save changes

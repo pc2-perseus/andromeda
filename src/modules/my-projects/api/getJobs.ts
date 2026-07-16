@@ -7,18 +7,17 @@ export default async function getJobs(
     projectOid: string,
     computeProjectId: string,
     page: number = 1,
-    pageSize: number = 100
+    pageSize: number = 100,
+    groupId?: number
 ): Promise<Job[]> {
-    const call = await makeAPICall<{
+    const response = await makeAPICall<{
         jobs: Job[];
     }>(
         HTTPMethod.GET,
-        `/perseus/service/Andromeda/jobs/${projectOid}/${computeProjectId}?page=${page}&page_size=${pageSize}`,
+        `/perseus/service/Andromeda/jobs/${projectOid}/${computeProjectId}${groupId !== undefined ? `/group/${groupId}` : ""}?page=${page}&page_size=${pageSize}`,
         undefined,
         true
     );
 
-    return call.statusCode === 200 && call.value !== null
-        ? isoToDates(call.value.jobs)
-        : [];
+    return isoToDates(response.jobs);
 }

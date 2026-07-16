@@ -1,19 +1,15 @@
 import React from "react";
 import { Button, CircularProgress } from "@mui/material";
-import useSubmitState from "../../hooks/useSubmitState.ts";
+import useIsSubmitting from "../../hooks/useIsSubmitting.ts";
 
-export default function SubmitButton({
-    loading,
-}: {
-    loading: boolean;
-}): React.ReactElement {
-    const { isSubmitting } = useSubmitState();
+export default function SubmitButton(): React.ReactElement {
+    const isSubmitting = useIsSubmitting();
 
     return (
         <Button
             type="submit"
             variant="contained"
-            disabled={isSubmitting || loading}
+            disabled={isSubmitting}
             startIcon={
                 isSubmitting ? (
                     <CircularProgress size={18} color="inherit" />

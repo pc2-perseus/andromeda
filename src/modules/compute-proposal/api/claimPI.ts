@@ -5,7 +5,7 @@ export default async function claimPI(
     proposalOid: string,
     token: string
 ): Promise<boolean> {
-    const call = await makeAPICall<{
+    const response = await makeAPICall<{
         success: boolean;
     }>(
         HTTPMethod.POST,
@@ -13,5 +13,5 @@ export default async function claimPI(
         { project_oid: proposalOid, token: token }
     );
 
-    return call.statusCode === 200 && call.value?.success === true;
+    return response.success;
 }

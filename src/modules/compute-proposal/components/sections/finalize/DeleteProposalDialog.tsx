@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 
 // Custom imports
-import deleteProposal from "../../../api/deleteProposal";
+import useDeleteProposalMutation from "../../../hooks/useDeleteProposalMutation.ts";
 
 type Props = {
     open: boolean;
@@ -27,19 +27,14 @@ export default function DeleteProposalDialog({
     onClose,
     onDeleted,
 }: Props): React.ReactElement {
-    const [isDeleting, setIsDeleting] = React.useState(false);
+    const deleteMutation = useDeleteProposalMutation();
 
     const handleDelete = async () => {
-        setIsDeleting(true);
-
-        const success = await deleteProposal(proposalId);
-
-        setIsDeleting(false);
-        onClose();
-
-        if (success && onDeleted) {
-            onDeleted();
-        } else if (!success) {
+        try {
+            await deleteMutation.mutateAsync(proposalId);
+            onClose();
+            onDeleted?.();
+        } catch {
             alert("Failed to delete proposal.");
         }
     };
@@ -62,7 +57,7 @@ export default function DeleteProposalDialog({
                     onClick={handleDelete}
                     color="error"
                     variant="contained"
-                    disabled={isDeleting}
+                    disabled={deleteMutation.isPending}
                 >
                     Delete
                 </Button>

@@ -1,26 +1,38 @@
 import React from "react";
 
-import { Box, Typography, Button } from "@mui/material";
+import { Alert, Box, Button, Typography } from "@mui/material";
 
-import { getSSHKeys, addSSHKey, deleteSSHKey } from "../../api/sshKeys";
-import type { SSHKey } from "../../../../types/perseus/SSHKey";
 import SSHKeysList from "./SSHKeyList";
 import SSHKeyModal from "./SSHKeysModal";
+import SSHKeysSkeleton from "./SSHKeysSkeleton";
+import useSshKeysQuery from "../../hooks/useSshKeysQuery.ts";
+import useAddSshKeyMutation from "../../hooks/useAddSshKeyMutation.ts";
+import useDeleteSshKeyMutation from "../../hooks/useDeleteSshKeyMutation.ts";
 
 export default function SSHKeys(): React.ReactElement {
-    const [keys, setKeys] = React.useState<SSHKey[]>([]);
     const [modalOpen, setModalOpen] = React.useState(false);
 
-    async function loadKeys() {
-        const data = await getSSHKeys();
-        setKeys(data);
+    const { data: keys, isPending, isError } = useSshKeysQuery();
+    const addMutation = useAddSshKeyMutation();
+    const deleteMutation = useDeleteSshKeyMutation();
+
+    if (isPending) {
+        return <SSHKeysSkeleton />;
     }
 
-    React.useEffect(() => {
-        loadKeys();
-    }, []);
+    if (isError) {
+        return (
+            <Alert severity="error">
+                There was an error loading your SSH keys.
+            </Alert>
+        );
+    }
 
     async function handleAdd(name: string, pubKey: string) {
+        if (!keys) {
+            return;
+        }
+
         const nameExists = keys.some((k) => k.name === name);
         const keyExists = keys.some((k) => k.pub_ssh_key === pubKey);
 
@@ -28,19 +40,19 @@ export default function SSHKeys(): React.ReactElement {
             return;
         }
 
-        const success = await addSSHKey(name, pubKey);
-
-        if (success) {
-            await loadKeys();
+        try {
+            await addMutation.mutateAsync({ name, pubSshKey: pubKey });
             setModalOpen(false);
+        } catch {
+            // Error shown below.
         }
     }
 
     async function handleDelete(id: string) {
-        const success = await deleteSSHKey(id);
-
-        if (success) {
-            await loadKeys();
+        try {
+            await deleteMutation.mutateAsync(id);
+        } catch {
+            // Error shown below.
         }
     }
 
@@ -65,6 +77,18 @@ export default function SSHKeys(): React.ReactElement {
                     Add SSH public key
                 </Button>
             </Box>
+
+            {addMutation.isError && (
+                <Alert severity="error" sx={{ mb: 2 }}>
+                    There was an error adding your SSH key.
+                </Alert>
+            )}
+
+            {deleteMutation.isError && (
+                <Alert severity="error" sx={{ mb: 2 }}>
+                    There was an error deleting your SSH key.
+                </Alert>
+            )}
 
             {/* If no keys */}
             {keys.length === 0 ? (

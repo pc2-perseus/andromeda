@@ -7,6 +7,6 @@ export default function filterEnabledNavbarItems(
 ): NavbarItem[] {
     return Object.entries(moduleNavbarItems).flatMap(
         ([moduleId, items]: [string, NavbarItem[]]): NavbarItem[] =>
-            globalConfig.enabledModules.includes(moduleId) ? items : []
+            globalConfig.enabled_modules.includes(moduleId) ? items : []
     );
 }

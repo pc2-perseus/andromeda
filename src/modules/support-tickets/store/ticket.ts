@@ -1,14 +1,7 @@
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 import { ValidationError } from "yup";
-import attachAttachment from "../api/attach.ts";
-import createTicket from "../api/createTicket.ts";
-import { ATTACHMENT_WARNING } from "../constants.ts";
 import { ticketSchema } from "../schema/ticket.ts";
-
-type SubmissionState = {
-    attachmentWarning: string | null;
-};
 
 type FormStore = {
     subject: string;
@@ -41,15 +34,6 @@ type FormStore = {
     setValidationError: (path: string, message: string) => void;
     clearValidationError: (path: string) => void;
 
-    submitError: string | null;
-
-    isSubmitting: boolean;
-    submit: () => Promise<boolean>;
-
-    submissionState: SubmissionState | null;
-    setSubmissionState: (value: SubmissionState | null) => void;
-    attach: (messageOid: string) => Promise<boolean>;
-
     reset: () => void;
 };
 
@@ -64,9 +48,6 @@ const initialState = {
     attachment: null,
     isValidating: false,
     validationErrors: {},
-    submitError: null,
-    isSubmitting: false,
-    submissionState: null,
 };
 
 export const useTicketStore = create<FormStore>()(
@@ -134,92 +115,6 @@ export const useTicketStore = create<FormStore>()(
             set((state) => {
                 delete state.validationErrors[path];
             }),
-
-        submit: async () => {
-            const {
-                subject,
-                body,
-                selectedProjectOid,
-                selectedComputeProjectId,
-                selectedServiceOid,
-                jobIdInput,
-                attachment,
-                attach,
-                validate,
-            } = get();
-
-            set({ isSubmitting: true, submitError: null });
-
-            try {
-                const valid = await validate();
-
-                if (!valid) {
-                    return false;
-                }
-
-                const created = await createTicket({
-                    subject: subject.trim(),
-                    body: body.trim(),
-                    project_oid: selectedProjectOid || null,
-                    compute_project_id: selectedComputeProjectId || null,
-                    service_oids:
-                        selectedServiceOid === "" ? [] : [selectedServiceOid],
-                    job_id:
-                        jobIdInput.trim() === ""
-                            ? null
-                            : Number.parseInt(jobIdInput.trim(), 10),
-                });
-
-                if (!created.result) {
-                    set({
-                        submitError:
-                            "The support ticket could not be submitted.",
-                    });
-                    return false;
-                }
-
-                let attachmentWarning: string | null = null;
-                if (attachment !== null) {
-                    if (created.message_oid === null) {
-                        attachmentWarning = ATTACHMENT_WARNING;
-                    } else {
-                        const uploaded = await attach(created.message_oid);
-
-                        if (!uploaded) {
-                            attachmentWarning = ATTACHMENT_WARNING;
-                        }
-                    }
-                }
-
-                set({
-                    submissionState: { attachmentWarning },
-                });
-                return true;
-            } catch {
-                set({
-                    submitError: "The support ticket could not be submitted.",
-                });
-                return false;
-            } finally {
-                set({ isSubmitting: false });
-            }
-        },
-
-        setSubmissionState: (value) => set({ submissionState: value }),
-
-        attach: async (messageOid) => {
-            const { attachment } = get();
-
-            if (attachment === null) {
-                return true;
-            }
-
-            try {
-                return await attachAttachment(messageOid, attachment);
-            } catch {
-                return false;
-            }
-        },
 
         reset: () => set(initialState),
     }))

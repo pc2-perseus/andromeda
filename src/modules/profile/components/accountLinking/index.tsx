@@ -3,28 +3,61 @@ import { Box, Typography, Alert } from "@mui/material";
 import { useSearchParams } from "react-router-dom";
 
 import ProviderList from "./ProviderList";
-import useProviders from "./hooks/useProviders";
+import useLinkedProvidersQuery from "../../hooks/useLinkedProvidersQuery.ts";
+import useLoginOptionsQuery from "../../../login/hooks/useLoginOptionsQuery.ts";
+import useLinkedLoginOptions from "../../hooks/useLinkedLoginOptions.ts";
 
 export default function AccountLinking(): React.ReactElement {
     const [searchParams, setSearchParams] = useSearchParams();
-    const { providers, loading, error, totalLinked, refresh } = useProviders();
+    const [message, setMessage] = React.useState<{
+        severity: "success" | "error";
+        text: string;
+    } | null>(null);
 
-    const [message, setMessage] = React.useState<string | null>(null);
+    const {
+        data: linkedProviders,
+        isPending: isLinkedProvidersPending,
+        isError: isLinkedProvidersError,
+        refetch,
+    } = useLinkedProvidersQuery();
+    const {
+        data: loginOptions,
+        isPending: isLoginOptionsPending,
+        isError: isLoginOptionsError,
+    } = useLoginOptionsQuery();
+
+    const linkedLoginOptions = useLinkedLoginOptions({
+        linked: linkedProviders || [],
+        options: loginOptions || [],
+    });
 
     React.useEffect(() => {
         const linkStatus = searchParams.get("link_status");
 
         if (linkStatus === "success") {
-            refresh();
-            setMessage("Your identity was linked successfully.");
+            refetch();
+            setMessage({
+                severity: "success",
+                text: "Your identity was linked successfully.",
+            });
 
             const updatedSearchParams = new URLSearchParams(searchParams);
             updatedSearchParams.delete("link_status");
             setSearchParams(updatedSearchParams, { replace: true });
         }
-    }, [refresh, searchParams, setSearchParams]);
+    }, [refetch, searchParams, setSearchParams]);
 
-    if (loading) return <></>;
+    if (isLinkedProvidersPending || isLoginOptionsPending) {
+        return <></>;
+    }
+
+    if (isLoginOptionsError || isLinkedProvidersError) {
+        return (
+            <Alert severity="error">
+                There was an error loading your account links
+            </Alert>
+        );
+    }
 
     return (
         <Box>
@@ -34,14 +67,13 @@ export default function AccountLinking(): React.ReactElement {
                 Link multiple login providers to your account.
             </Typography>
 
-            {error && <Alert severity="error">{error}</Alert>}
-            {message && <Alert severity="success">{message}</Alert>}
+            {message && (
+                <Alert severity={message.severity}>{message.text}</Alert>
+            )}
 
             <ProviderList
-                providers={providers}
-                totalLinked={totalLinked}
+                providers={linkedLoginOptions}
                 setMessage={setMessage}
-                refresh={refresh}
             />
         </Box>
     );

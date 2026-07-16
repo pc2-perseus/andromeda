@@ -31,6 +31,9 @@ export default function ComputeProposalList(): React.ReactElement {
                         <Typography variant="h2" component="h1">
                             My compute proposals
                         </Typography>
+                        <Typography color="text.secondary">
+                            Create and manage compute proposal requests.
+                        </Typography>
                     </Box>
                     <Box sx={{ px: 2 }}>
                         <Card variant="outlined" sx={{ mb: 3 }}>

@@ -3,8 +3,7 @@ import type { RouteElement } from "../../types/RouteElement.ts";
 import ComputeProposal from "./components/ComputeProposal.tsx";
 import ClaimPC from "./components/ClaimPC.tsx";
 import ClaimPI from "./components/ClaimPI.tsx";
-import ComputeProposalDetails from "./components/ComputeProposalDetails.tsx";
-import { ResourceProvider } from "../../contexts/resources/ResourceProvider.tsx";
+import ComputeProposalDetails from "./components/detail";
 
 export const routes: RouteElement[] = [
     {
@@ -24,11 +23,7 @@ export const routes: RouteElement[] = [
     },
     {
         path: "/compute-proposal/submitted/:proposalId",
-        element: (
-            <ResourceProvider>
-                <ComputeProposalDetails />
-            </ResourceProvider>
-        ),
+        element: <ComputeProposalDetails />,
         requiresLogin: true,
     },
     {

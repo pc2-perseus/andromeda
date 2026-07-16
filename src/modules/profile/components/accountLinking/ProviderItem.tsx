@@ -1,8 +1,8 @@
 import React from "react";
 import { Box, Button, Typography, Tooltip } from "@mui/material";
 
-import unlinkProvider from "../../api/unlinkProvider";
 import CONFIG from "../../../../config";
+import useUnlinkProviderMutation from "../../hooks/useUnlinkProviderMutation.ts";
 
 type Props = {
     provider: {
@@ -11,17 +11,16 @@ type Props = {
         linked: boolean;
     };
     totalLinked: number;
-    setMessage: (msg: string) => void;
-    refresh: () => void;
+    setMessage: (msg: { severity: "success" | "error"; text: string }) => void;
 };
 
 export default function ProviderItem({
     provider,
     totalLinked,
     setMessage,
-    refresh,
 }: Props): React.ReactElement {
     const isLastProvider = provider.linked && totalLinked === 1;
+    const unlinkMutation = useUnlinkProviderMutation();
 
     const handleConnect = () => {
         const url = new URL(`${CONFIG.GATEWAY_URL}/auth/link`);
@@ -31,11 +30,16 @@ export default function ProviderItem({
 
     const handleDisconnect = async () => {
         try {
-            await unlinkProvider(provider.identifier);
-            setMessage("Provider unlinked successfully");
-            refresh();
+            await unlinkMutation.mutateAsync(provider.identifier);
+            setMessage({
+                severity: "success",
+                text: "Provider unlinked successfully",
+            });
         } catch {
-            setMessage("Failed to unlink provider");
+            setMessage({
+                severity: "error",
+                text: "Failed to unlink provider",
+            });
         }
     };
 
@@ -66,7 +70,9 @@ export default function ProviderItem({
                         <Button
                             variant="outlined"
                             color="error"
-                            disabled={isLastProvider}
+                            disabled={
+                                isLastProvider || unlinkMutation.isPending
+                            }
                             onClick={handleDisconnect}
                         >
                             Unlink

@@ -4,7 +4,7 @@ import { HTTPMethod } from "../../../api/HTTPMethod.ts";
 export default async function saveAffiliation(
     affiliationOid: string
 ): Promise<boolean> {
-    const call = await makeAPICall<{
+    const response = await makeAPICall<{
         success: boolean;
     }>(
         HTTPMethod.POST,
@@ -13,5 +13,5 @@ export default async function saveAffiliation(
         true
     );
 
-    return call.statusCode === 200 && call.value?.success === true;
+    return response.success;
 }

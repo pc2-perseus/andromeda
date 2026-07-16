@@ -1,22 +1,29 @@
 import React from "react";
 import { MenuItem, TextField } from "@mui/material";
-import type { SystemStatusService } from "../../../../types/perseus/SystemStatusService.ts";
+import useServicesQuery from "../../../system-status/hooks/useServicesQuery.ts";
+import useSystemStatusGroups from "../../../system-status/hooks/useSystemStatusGroups.ts";
 import useServiceGroupSelection from "../../hooks/useServiceGroupSelection.ts";
 import useServiceSelection from "../../hooks/useServiceSelection.ts";
-import useSubmitState from "../../hooks/useSubmitState.ts";
+import useIsSubmitting from "../../hooks/useIsSubmitting.ts";
+import FormFieldSkeleton from "./FormFieldSkeleton.tsx";
 
-export default function ServiceGroup({
-    serviceGroups,
-}: {
-    serviceGroups: {
-        key: string;
-        title: string;
-        services: { service: SystemStatusService }[];
-    }[];
-}): React.ReactElement {
+export default function ServiceGroup(): React.ReactElement {
+    const {
+        data: services = [],
+        isPending: loading,
+        isError,
+    } = useServicesQuery();
+    const serviceGroups = useSystemStatusGroups({
+        entries: [],
+        services,
+    });
     const { value, setValue } = useServiceGroupSelection();
     const { setValue: setServiceValue } = useServiceSelection();
-    const { isSubmitting } = useSubmitState();
+    const isSubmitting = useIsSubmitting();
+
+    if (loading) {
+        return <FormFieldSkeleton />;
+    }
 
     return (
         <TextField
@@ -28,8 +35,13 @@ export default function ServiceGroup({
                 setValue(event.target.value);
                 setServiceValue("");
             }}
-            disabled={isSubmitting || serviceGroups.length === 0}
-            helperText="Optional: narrow the service selection to one cluster or to central services."
+            error={isError}
+            disabled={isSubmitting || isError || serviceGroups.length === 0}
+            helperText={
+                isError
+                    ? "Service groups could not be loaded."
+                    : "Optional: narrow the service selection to one cluster or to central services."
+            }
         >
             <MenuItem value="">No specific group</MenuItem>
             {serviceGroups.map((group) => (

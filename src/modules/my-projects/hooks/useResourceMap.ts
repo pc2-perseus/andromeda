@@ -1,11 +1,9 @@
 import { useMemo } from "react";
-import useResources from "../../../contexts/resources";
 import type { Resource } from "../../../types/perseus/Resource.ts";
+import useResources from "../../../hooks/useResources.ts";
 
 export default function useResourceMap() {
-    const {
-        resourceData: { resources },
-    } = useResources();
+    const { resources } = useResources();
 
     return useMemo(() => {
         const map = new Map<string, Resource>();

@@ -3,20 +3,22 @@ import React from "react";
 
 // MUI imports
 import {
+    Alert,
     FormControl,
     FormHelperText,
     InputLabel,
     MenuItem,
     Select,
+    Skeleton,
 } from "@mui/material";
 
 // Custom imports
 import InfoInput from "../../../../../components/InfoInput.tsx";
-import getProjectsOverview from "../../../api/getProjectsOverview.ts";
 import useIsFollowUp from "../../../hooks/useIsFollowUp.ts";
 import useModuleConfig from "../../../hooks/useModuleConfig.ts";
 import usePredecessorId from "../../../hooks/usePredecessorId.ts";
 import useValidationErrors from "../../../hooks/useValidationErrors.ts";
+import useProjectsOverviewQuery from "../../../hooks/useProjectsOverviewQuery.ts";
 
 export default function Predecessor(): React.ReactElement | null {
     const config = useModuleConfig();
@@ -24,26 +26,26 @@ export default function Predecessor(): React.ReactElement | null {
 
     const [isFollowUp] = useIsFollowUp();
     const [predecessorId, setPredecessorId] = usePredecessorId();
-    const [possiblePredecessors, setPossiblePredecessors] = React.useState<
-        {
-            _id: string;
-            abbreviation: string | null;
-            title: string | null;
-        }[]
-    >([]);
-
-    React.useEffect(() => {
-        if (!isFollowUp) {
-            return;
-        }
-
-        getProjectsOverview().then((data) => {
-            setPossiblePredecessors(data);
-        });
-    }, [isFollowUp]);
+    const {
+        data: possiblePredecessors,
+        isPending,
+        isError,
+    } = useProjectsOverviewQuery();
 
     if (!config || !isFollowUp) {
         return null;
+    }
+
+    if (isPending) {
+        return <Skeleton height={50} />;
+    }
+
+    if (isError) {
+        return (
+            <Alert severity="error">
+                There was an error loading the predecessor projects
+            </Alert>
+        );
     }
 
     return (

@@ -6,7 +6,7 @@ export default async function getUsage(
     projectId: string,
     computeProjectId: string
 ): Promise<ResourceUsage[]> {
-    const call = await makeAPICall<{
+    const response = await makeAPICall<{
         used: ResourceUsage[];
     }>(
         HTTPMethod.GET,
@@ -15,7 +15,5 @@ export default async function getUsage(
         true
     );
 
-    return call.statusCode === 200 && call.value !== null
-        ? call.value.used
-        : [];
+    return response.used;
 }

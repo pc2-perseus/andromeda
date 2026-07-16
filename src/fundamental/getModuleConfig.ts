@@ -4,8 +4,8 @@ export default function getModuleConfig(
     config: GlobalConfiguration,
     moduleId: string
 ): object | undefined {
-    if (moduleId in config.moduleConfigurations) {
-        return config.moduleConfigurations[moduleId];
+    if (moduleId in config.module_configurations) {
+        return config.module_configurations[moduleId];
     }
     return undefined;
 }

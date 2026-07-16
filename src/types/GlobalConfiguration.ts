@@ -1,4 +1,4 @@
 export type GlobalConfiguration = {
-    enabledModules: string[];
-    moduleConfigurations: { [key: string]: object };
+    enabled_modules: string[];
+    module_configurations: { [key: string]: object };
 };

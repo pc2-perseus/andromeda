@@ -7,10 +7,8 @@ export type LoginOption = {
 };
 
 export default async function getLoginOptions(): Promise<LoginOption[]> {
-    const call = await makeAPICall<LoginOption[]>(
+    return await makeAPICall<LoginOption[]>(
         HTTPMethod.GET,
         "/auth/login-options"
     );
-
-    return call.statusCode === 200 && call.value ? call.value : [];
 }

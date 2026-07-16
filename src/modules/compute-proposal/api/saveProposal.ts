@@ -5,14 +5,12 @@ import type { Project } from "../../../types/perseus/Project.ts";
 export default async function saveProposal(
     project: Project
 ): Promise<string | null> {
-    const call = await makeAPICall<{
+    const response = await makeAPICall<{
         success: boolean;
         oid: string;
     }>(HTTPMethod.POST, "/perseus/service/Andromeda/compute-proposal/save", {
         project: project,
     });
 
-    return call.statusCode === 200 && call.value !== null && call.value.success
-        ? call.value.oid
-        : null;
+    return response.oid;
 }

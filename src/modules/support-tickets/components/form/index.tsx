@@ -9,34 +9,25 @@ import Service from "./Service.tsx";
 import ServiceGroup from "./ServiceGroup.tsx";
 import Subject from "./Subject.tsx";
 import SubmitButton from "./SubmitButton.tsx";
-import SubmitError from "./SubmitError.tsx";
-import FormSkeleton from "./FormSkeleton.tsx";
-import useDefaults from "../../hooks/useDefaults.ts";
-import useProjects from "../../hooks/useProjects.ts";
-import useServiceGroups from "../../hooks/useServiceGroups.ts";
 import useSubmit from "../../hooks/useSubmit.ts";
+import Success from "../Success.tsx";
+import useReset from "../../hooks/useReset.ts";
 
 export default function Form(): React.ReactElement {
-    const {
-        projects,
-        loading: projectsLoading,
-        error: projectsError,
-    } = useProjects();
-    const {
-        serviceGroups,
-        loading: serviceGroupsLoading,
-        error: serviceGroupsError,
-    } = useServiceGroups();
-    const { computeProjects, projectLoading, serviceOptions } = useDefaults({
-        projects,
-        serviceGroups,
-    });
-    const { handleAttachmentChange, handleSubmit } = useSubmit();
-    const loading = projectsLoading || serviceGroupsLoading || projectLoading;
-    const error = projectsError ?? serviceGroupsError;
+    const reset = useReset();
+    const { isSuccess, isError, error, handleAttachmentChange, handleSubmit } =
+        useSubmit();
 
-    if (loading) {
-        return <FormSkeleton />;
+    React.useEffect(() => {
+        reset();
+
+        return () => {
+            reset();
+        };
+    }, [reset]);
+
+    if (isSuccess) {
+        return <Success />;
     }
 
     return (
@@ -53,40 +44,25 @@ export default function Form(): React.ReactElement {
                     Create New Support Ticket
                 </Typography>
 
-                {error !== null && <Alert severity="error">{error}</Alert>}
-                {projects.length === 0 && !loading && (
-                    <Alert severity="info">
-                        No user-related projects are available. You can still
-                        submit a general support ticket.
-                    </Alert>
-                )}
-
-                <SubmitError />
-
                 <Grid container spacing={2}>
                     <Grid size={12}>
                         <Subject />
                     </Grid>
 
                     <Grid size={{ xs: 12, md: 6 }}>
-                        <Project
-                            loading={projectsLoading}
-                            projects={projects}
-                        />
+                        <Project />
                     </Grid>
 
                     <Grid size={{ xs: 12, md: 6 }}>
-                        <ComputeProjectComponent
-                            computeProjects={computeProjects}
-                        />
+                        <ComputeProjectComponent />
                     </Grid>
 
                     <Grid size={{ xs: 12, md: 6 }}>
-                        <ServiceGroup serviceGroups={serviceGroups} />
+                        <ServiceGroup />
                     </Grid>
 
                     <Grid size={{ xs: 12, md: 6 }}>
-                        <Service serviceOptions={serviceOptions} />
+                        <Service />
                     </Grid>
 
                     <Grid size={12}>
@@ -104,13 +80,17 @@ export default function Form(): React.ReactElement {
                     </Grid>
                 </Grid>
 
+                {isError ? (
+                    <Alert severity="error">{error?.message}</Alert>
+                ) : null}
+
                 <Box
                     sx={{
                         display: "flex",
                         justifyContent: "flex-end",
                     }}
                 >
-                    <SubmitButton loading={loading} />
+                    <SubmitButton />
                 </Box>
             </Stack>
         </Paper>

@@ -7,19 +7,33 @@ import { Alert, Box, Card, CardContent, Skeleton } from "@mui/material";
 
 // Custom imports
 import StatusBarCard from "./components/StatusBarCard.tsx";
-import { ResourceProvider } from "../../contexts/resources/ResourceProvider.tsx";
-import useSystemStatusOverview from "../system-status/hooks/useSystemStatusOverview.ts";
 import { SystemStatusCategory } from "../../types/perseus/SystemStatusCategory.ts";
-import useConfig from "../../contexts/configuration";
-import type { GlobalConfiguration } from "../../types/GlobalConfiguration.ts";
+import useEntriesQuery from "../system-status/hooks/useEntriesQuery.ts";
+import useServicesQuery from "../system-status/hooks/useServicesQuery.ts";
+import useSystemStatusGroups from "../system-status/hooks/useSystemStatusGroups.ts";
+import useConfig from "../../hooks/useConfig.ts";
 
 function StatusBarContent(): React.ReactElement | null {
     const navigate = useNavigate();
-    const { config }: { config: GlobalConfiguration } = useConfig();
-    const { groups, loading, error } = useSystemStatusOverview();
-    const showDetailsButton = config.enabledModules.includes("system-status");
+    const config = useConfig();
+    const showDetailsButton = config.enabled_modules.includes("system-status");
 
-    if (loading) {
+    const {
+        data: entries,
+        isPending: isEntriesPending,
+        isError: isEntriesError,
+    } = useEntriesQuery();
+    const {
+        data: services,
+        isPending: isServicesPending,
+        isError: isServicesError,
+    } = useServicesQuery();
+    const groups = useSystemStatusGroups({
+        entries: entries || [],
+        services: services || [],
+    });
+
+    if (isEntriesPending || isServicesPending) {
         return (
             <Box
                 sx={{
@@ -50,8 +64,12 @@ function StatusBarContent(): React.ReactElement | null {
         );
     }
 
-    if (error !== null) {
-        return <Alert severity="error">{error}</Alert>;
+    if (isEntriesError || isServicesError) {
+        return (
+            <Alert severity="error">
+                There was an error loading system status entries
+            </Alert>
+        );
     }
 
     if (groups.length === 0) {
@@ -93,9 +111,5 @@ function StatusBarContent(): React.ReactElement | null {
 }
 
 export default function StatusBar(): React.ReactElement {
-    return (
-        <ResourceProvider>
-            <StatusBarContent />
-        </ResourceProvider>
-    );
+    return <StatusBarContent />;
 }

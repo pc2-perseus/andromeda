@@ -19,3 +19,15 @@ export type MyProjectListItem = Pick<
     source_name: string | null;
     current_states: string[];
 };
+
+export type ComputeProjectOverviewItem = {
+    project_oid: string;
+    title: string | null;
+    compute_project_id: string;
+    states: string[];
+    recent_jobs: {
+        date: string;
+        count: number;
+    }[];
+    pending_running_jobs: number;
+};

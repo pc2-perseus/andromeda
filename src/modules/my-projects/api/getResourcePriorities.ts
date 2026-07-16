@@ -5,11 +5,9 @@ import type { ResourcePriority } from "../../../types/perseus/ResourcePriority.t
 export default async function getResourcePriorities(): Promise<
     ResourcePriority[]
 > {
-    const call = await makeAPICall<{
+    const response = await makeAPICall<{
         resource_priorities: ResourcePriority[];
     }>(HTTPMethod.GET, "/perseus/service/PriorityManager/all", undefined, true);
 
-    return call.statusCode === 200 && call.value !== null
-        ? call.value.resource_priorities
-        : [];
+    return response.resource_priorities;
 }

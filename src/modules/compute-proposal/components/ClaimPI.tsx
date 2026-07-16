@@ -6,13 +6,14 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Alert, AlertTitle, Box, CircularProgress } from "@mui/material";
 
 // Custom imports
-import claimPI from "../api/claimPI.ts";
+import useClaimPIMutation from "../hooks/useClaimPIMutation.ts";
 
 export default function ClaimPI(): React.ReactElement {
     const { proposalId }: { proposalId?: string } = useParams();
 
     const [status, setStatus] = React.useState<"loading" | "error">("loading");
     const [searchParams] = useSearchParams();
+    const { mutate } = useClaimPIMutation();
 
     const navigate = useNavigate();
 
@@ -24,14 +25,20 @@ export default function ClaimPI(): React.ReactElement {
             return;
         }
 
-        claimPI(proposalId, token).then((result: boolean) => {
-            if (result) {
-                navigate(`/compute-proposal/${proposalId}`);
-            } else {
-                setStatus("error");
+        mutate(
+            { proposalId, token },
+            {
+                onSuccess: (result) => {
+                    if (result) {
+                        navigate(`/compute-proposal/${proposalId}`);
+                    } else {
+                        setStatus("error");
+                    }
+                },
+                onError: () => setStatus("error"),
             }
-        });
-    }, []);
+        );
+    }, [mutate, navigate, proposalId, searchParams]);
 
     return (
         <>

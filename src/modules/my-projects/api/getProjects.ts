@@ -3,17 +3,10 @@ import { HTTPMethod } from "../../../api/HTTPMethod.ts";
 import type { MyProjectListItem } from "../types/project.ts";
 
 export default async function getProjects(): Promise<MyProjectListItem[]> {
-    const call = await makeAPICall<{
+    const response = await makeAPICall<{
         items: MyProjectListItem[];
         count: number;
-    }>(
-        HTTPMethod.GET,
-        "/perseus/service/Andromeda/projects/overview",
-        undefined,
-        true
-    );
+    }>(HTTPMethod.GET, "/perseus/service/Andromeda/projects/overview");
 
-    return call.statusCode === 200 && call.value !== null
-        ? call.value.items
-        : [];
+    return response.items;
 }

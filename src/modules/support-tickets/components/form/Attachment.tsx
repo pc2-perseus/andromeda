@@ -1,7 +1,7 @@
 import React from "react";
 import { Button, FormControl, FormHelperText } from "@mui/material";
 import useAttachment from "../../hooks/useAttachment.ts";
-import useSubmitState from "../../hooks/useSubmitState.ts";
+import useIsSubmitting from "../../hooks/useIsSubmitting.ts";
 import useValidationError from "../../hooks/useValidationError.ts";
 
 export default function Attachment({
@@ -12,7 +12,7 @@ export default function Attachment({
     ) => void;
 }): React.ReactElement {
     const { attachment } = useAttachment();
-    const { isSubmitting } = useSubmitState();
+    const isSubmitting = useIsSubmitting();
     const error = useValidationError("attachment");
 
     return (

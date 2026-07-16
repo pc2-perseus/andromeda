@@ -23,7 +23,7 @@ export const USAGE_RANGE_OPTIONS: { value: UsageRange; label: string }[] = [
     { value: "all-time", label: "All time" },
 ];
 
-export const DEFAULT_USAGE_RANGE: UsageRange = "2-months";
+export const DEFAULT_USAGE_RANGE: UsageRange = "1-month";
 
 function getRangeStartDate(
     toDate: dayjs.Dayjs,

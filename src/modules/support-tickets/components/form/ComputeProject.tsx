@@ -2,19 +2,22 @@ import React from "react";
 import { MenuItem, TextField } from "@mui/material";
 import type { ComputeProject as ComputeProjectType } from "../../../../types/perseus/ComputeProject.ts";
 import useComputeProjectSelection from "../../hooks/useComputeProjectSelection.ts";
-import useSubmitState from "../../hooks/useSubmitState.ts";
+import useComputeProjectOptions from "../../hooks/useComputeProjectOptions.ts";
+import FormFieldSkeleton from "./FormFieldSkeleton.tsx";
+import useIsSubmitting from "../../hooks/useIsSubmitting.ts";
 
 function getComputeProjectLabel(computeProject: ComputeProjectType): string {
     return computeProject.compute_project_id;
 }
 
-export default function ComputeProject({
-    computeProjects,
-}: {
-    computeProjects: ComputeProjectType[];
-}): React.ReactElement {
+export default function ComputeProject(): React.ReactElement {
+    const { computeProjects, loading } = useComputeProjectOptions();
     const { value, setValue } = useComputeProjectSelection();
-    const { isSubmitting } = useSubmitState();
+    const isSubmitting = useIsSubmitting();
+
+    if (loading) {
+        return <FormFieldSkeleton />;
+    }
 
     return (
         <TextField

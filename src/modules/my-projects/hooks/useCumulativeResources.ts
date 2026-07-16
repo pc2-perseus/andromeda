@@ -1,9 +1,7 @@
-import useResources from "../../../contexts/resources";
+import useResources from "../../../hooks/useResources.ts";
 
 export default function useCumulativeResources() {
-    const {
-        resourceData: { resources },
-    } = useResources();
+    const { resources } = useResources();
 
     return resources.filter((r) => r.resource_type == "cumulative");
 }

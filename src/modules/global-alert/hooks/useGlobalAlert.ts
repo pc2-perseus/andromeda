@@ -94,13 +94,18 @@ export default function useGlobalAlert(): {
     }, []);
 
     React.useEffect(() => {
-        void load();
+        const initialLoadTimeout = window.setTimeout(() => {
+            void load();
+        }, 0);
 
         const interval = window.setInterval(() => {
             void load();
         }, REFRESH_INTERVAL_MS);
 
-        return () => window.clearInterval(interval);
+        return () => {
+            window.clearTimeout(initialLoadTimeout);
+            window.clearInterval(interval);
+        };
     }, [load]);
 
     const alert = React.useMemo((): SystemStatusEntry | null => {

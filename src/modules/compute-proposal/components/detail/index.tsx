@@ -270,8 +270,7 @@ export default function ComputeProposalDetails(): React.ReactElement | null {
                                             project.custom_fields[
                                                 "additional_description"
                                             ]["public_links"] as
-                                                | string
-                                                | undefined
+                                                string | undefined
                                         )?.replaceAll("\n", "<br />") ?? ""
                                     )}
                                 </Box>

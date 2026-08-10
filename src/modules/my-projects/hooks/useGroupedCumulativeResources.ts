@@ -35,9 +35,12 @@ export type GroupedCumulativeResource = {
     resources: Resource[];
 };
 
-export default function useGroupedCumulativeResources() {
+export default function useGroupedCumulativeResources(
+    providedResources?: Resource[]
+) {
     const clusterMap = useClusterMap();
-    const resources = useCumulativeResources();
+    const cumulativeResources = useCumulativeResources();
+    const resources = providedResources ?? cumulativeResources;
 
     return useMemo(() => {
         const resourcesByCluster = new Map<string, typeof resources>();

@@ -6,7 +6,7 @@ import { Box, Dialog, DialogContent } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 
 // Icon imports
-import InfoOutlineIcon from "@mui/icons-material/InfoOutline";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 
 // Custom imports
 import parseMarkdown from "../utils/parseMarkdown.ts";
@@ -30,7 +30,7 @@ export default function InfoInput({
                 }}
             >
                 {children}
-                <InfoOutlineIcon
+                <InfoOutlinedIcon
                     sx={{
                         position: "absolute",
                         ml: 1,
@@ -65,7 +65,7 @@ export default function InfoInput({
             >
                 <Box sx={{ flexGrow: 1 }}>{children}</Box>
                 {infoText !== undefined && infoText !== null && (
-                    <InfoOutlineIcon
+                    <InfoOutlinedIcon
                         sx={{
                             alignSelf: "center",
                             cursor: "pointer",

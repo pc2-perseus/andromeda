@@ -3,8 +3,8 @@ import React from "react";
 
 // MUI imports
 import {
-    Autocomplete,
     Alert,
+    Autocomplete,
     Box,
     Button,
     TextField,
@@ -12,51 +12,38 @@ import {
 } from "@mui/material";
 
 // Custom imports
-import useAuth from "../../../../hooks/useAuth.ts";
 import useSaveNationalitiesMutation from "../../hooks/useSaveNationalitiesMutation.ts";
+import useAuthQuery from "../../../../hooks/useAuthQuery.ts";
 
 export default function Nationalities({
     nationalities,
 }: {
     nationalities: { name: string; iso_code: string }[];
 }): React.ReactElement {
-    const [loading, setLoading] = React.useState<boolean>(true);
+    const { data: auth } = useAuthQuery();
+    const saveMutation = useSaveNationalitiesMutation();
     const [validationError, setValidationError] = React.useState<string | null>(
         null
     );
 
-    const auth = useAuth();
-    const saveMutation = useSaveNationalitiesMutation();
+    const person = auth.person;
+    if (person === null) {
+        throw new Error("Person should never be null here");
+    }
 
-    const [selectedNationalities, setSelectedNationalities] = React.useState<
-        string[]
-    >([]);
+    const [draft, setDraft] = React.useState<string[] | null>(null);
+    const selectedNationalities = draft ?? person.nationalities;
 
     function updateNationalities() {
-        setValidationError(null);
         if (selectedNationalities.length === 0) {
             setValidationError("Please select at least one nationality.");
             return;
         }
 
-        saveMutation.mutate(selectedNationalities);
+        void saveMutation
+            .mutateAsync(selectedNationalities)
+            .then(() => setDraft(null));
     }
-
-    React.useEffect(() => {
-        setSelectedNationalities(auth.person?.nationalities ?? []);
-        setLoading(false);
-    }, [auth]);
-
-    if (loading || auth.person === null) {
-        return <></>;
-    }
-
-    const originalNationalities = auth.person.nationalities ?? [];
-    const isUnchanged =
-        selectedNationalities.length === originalNationalities.length &&
-        selectedNationalities.every((val) =>
-            originalNationalities.includes(val)
-        );
 
     return (
         <>
@@ -73,7 +60,7 @@ export default function Nationalities({
             <Autocomplete
                 value={selectedNationalities}
                 onChange={(_e, newValues: string[]) => {
-                    setSelectedNationalities(newValues);
+                    setDraft(newValues);
                     if (newValues.length > 0) setValidationError(null);
                 }}
                 options={nationalities
@@ -97,7 +84,10 @@ export default function Nationalities({
                 <Button
                     variant="contained"
                     sx={{ float: "right" }}
-                    disabled={saveMutation.isPending || isUnchanged}
+                    disabled={
+                        saveMutation.isPending ||
+                        selectedNationalities === person.nationalities
+                    }
                     onClick={updateNationalities}
                 >
                     Save changes

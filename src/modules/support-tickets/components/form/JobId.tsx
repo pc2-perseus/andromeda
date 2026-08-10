@@ -38,10 +38,13 @@ export default function JobId(): React.ReactElement {
                     label="Job ID"
                     helperText={helperText}
                     error={error !== null}
-                    inputProps={{
-                        ...params.inputProps,
-                        inputMode: "numeric",
-                        pattern: "[0-9]*",
+                    slotProps={{
+                        ...params.slotProps,
+                        htmlInput: {
+                            ...params.slotProps.htmlInput,
+                            inputMode: "numeric",
+                            pattern: "[0-9]*",
+                        },
                     }}
                 />
             )}

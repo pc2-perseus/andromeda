@@ -7,6 +7,7 @@ export type Person = DatabaseItem & {
     firstname: string;
     lastname: string;
     email: string;
+    orcid: string | null;
     phone: string | null;
     homepage: string | null;
     nationalities: string[];

@@ -5,7 +5,7 @@ import type { SystemStatusService } from "../../../types/perseus/SystemStatusSer
 export default async function getServices(): Promise<SystemStatusService[]> {
     const response = await makeAPICall<{
         services: SystemStatusService[];
-    }>(HTTPMethod.GET, "/perseus/service/SystemStatus/services");
+    }>(HTTPMethod.GET, "/perseus/service/Andromeda/system-status/services");
 
     return response.services;
 }

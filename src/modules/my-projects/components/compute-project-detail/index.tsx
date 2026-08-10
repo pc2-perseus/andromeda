@@ -75,8 +75,10 @@ export default function ComputeProjectDetail(): React.ReactElement {
                         <Stack
                             direction="row"
                             spacing={2}
-                            alignItems="flex-start"
-                            justifyContent="space-between"
+                            sx={{
+                                alignItems: "flex-start",
+                                justifyContent: "space-between",
+                            }}
                         >
                             <Stack spacing={0.5} sx={{ minWidth: 0 }}>
                                 <Typography

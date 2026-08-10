@@ -1,4 +1,3 @@
-import type { ChipProps } from "@mui/material";
 import type { Cluster } from "../../../types/perseus/Cluster.ts";
 import type { SystemStatusEntry } from "../../../types/perseus/SystemStatusEntry.ts";
 import { SystemStatusCategory } from "../../../types/perseus/SystemStatusCategory.ts";
@@ -8,33 +7,87 @@ import type {
     SystemStatusServiceItem,
 } from "../types/SystemStatusGroup.ts";
 
-const CATEGORY_PRIORITY: Record<SystemStatusCategory, number> = {
-    [SystemStatusCategory.RUNNING]: 0,
-    [SystemStatusCategory.INFO]: 1,
-    [SystemStatusCategory.WARNING]: 2,
-    [SystemStatusCategory.ERROR]: 3,
-};
+const ENTRY_PRIORITY = {
+    RUNNING: 0,
+    INFO: 1,
+    WARNING: 2,
+    ERROR: 3,
+    PLANNED_MAINTENANCE: 4,
+    CURRENT_MAINTENANCE: 5,
+} as const;
 
-const CATEGORY_COLORS: Record<
-    SystemStatusCategory,
-    NonNullable<ChipProps["color"]>
-> = {
-    [SystemStatusCategory.RUNNING]: "success",
-    [SystemStatusCategory.INFO]: "info",
-    [SystemStatusCategory.WARNING]: "warning",
-    [SystemStatusCategory.ERROR]: "error",
-};
+export function isSystemStatusEntryCurrent(
+    entry: SystemStatusEntry,
+    now: Date = new Date()
+): boolean {
+    const time = now.getTime();
+    const startTime = entry.start?.getTime() ?? Number.NEGATIVE_INFINITY;
+    const endTime = entry.end?.getTime() ?? Number.POSITIVE_INFINITY;
 
-export function getSystemStatusCategoryPriority(
-    category: SystemStatusCategory
-): number {
-    return CATEGORY_PRIORITY[category];
+    return startTime <= time && time <= endTime;
 }
 
-export function getSystemStatusCategoryColor(
-    category: SystemStatusCategory
-): ChipProps["color"] {
-    return CATEGORY_COLORS[category];
+export function isSystemStatusEntryPlanned(
+    entry: SystemStatusEntry,
+    now: Date = new Date()
+): boolean {
+    return (
+        (entry.category === SystemStatusCategory.MAINTENANCE ||
+            entry.status_type === "planned maintenance") &&
+        entry.start !== null &&
+        entry.start.getTime() > now.getTime()
+    );
+}
+
+function getSystemStatusEntryPriority(
+    entry: SystemStatusEntry,
+    now: Date = new Date()
+): number {
+    if (isSystemStatusEntryPlanned(entry, now)) {
+        return ENTRY_PRIORITY.PLANNED_MAINTENANCE;
+    }
+
+    if (entry.category === SystemStatusCategory.MAINTENANCE) {
+        if (
+            isSystemStatusEntryCurrent(entry, now) ||
+            doesSystemStatusEntryOverlapDay(entry, now)
+        ) {
+            return ENTRY_PRIORITY.CURRENT_MAINTENANCE;
+        }
+
+        return ENTRY_PRIORITY.INFO;
+    }
+
+    switch (entry.category) {
+        case SystemStatusCategory.ERROR:
+            return ENTRY_PRIORITY.ERROR;
+        case SystemStatusCategory.WARNING:
+            return ENTRY_PRIORITY.WARNING;
+        case SystemStatusCategory.INFO:
+            return ENTRY_PRIORITY.INFO;
+        case SystemStatusCategory.RUNNING:
+            return ENTRY_PRIORITY.RUNNING;
+    }
+}
+
+export function isSystemStatusEntryRelevantNow(
+    entry: SystemStatusEntry,
+    now: Date = new Date()
+): boolean {
+    return (
+        isSystemStatusEntryCurrent(entry, now) ||
+        isSystemStatusEntryPlanned(entry, now)
+    );
+}
+
+function isSystemStatusEntryRelevantForOverview(
+    entry: SystemStatusEntry,
+    now: Date = new Date()
+): boolean {
+    return (
+        isSystemStatusEntryRelevantNow(entry, now) ||
+        doesSystemStatusEntryOverlapDay(entry, now)
+    );
 }
 
 export function getSystemStatusEntryKey(entry: SystemStatusEntry): string {
@@ -59,11 +112,12 @@ export function compareSystemStatusEntries(
     left: SystemStatusEntry,
     right: SystemStatusEntry,
     getAffectedServiceCount: (entry: SystemStatusEntry) => number = (entry) =>
-        entry.service_oids.length
+        entry.service_oids.length,
+    now: Date = new Date()
 ): number {
     const categoryDifference =
-        getSystemStatusCategoryPriority(right.category) -
-        getSystemStatusCategoryPriority(left.category);
+        getSystemStatusEntryPriority(right, now) -
+        getSystemStatusEntryPriority(left, now);
     if (categoryDifference !== 0) {
         return categoryDifference;
     }
@@ -81,6 +135,68 @@ export function compareSystemStatusEntries(
     }
 
     return left.title.localeCompare(right.title);
+}
+
+export function doesSystemStatusEntryOverlapDay(
+    entry: SystemStatusEntry,
+    day: Date
+): boolean {
+    const dayStart = new Date(day);
+    dayStart.setHours(0, 0, 0, 0);
+
+    const dayEnd = new Date(dayStart);
+    dayEnd.setDate(dayEnd.getDate() + 1);
+
+    const startTime = entry.start?.getTime() ?? Number.NEGATIVE_INFINITY;
+    const endTime = entry.end?.getTime() ?? Number.POSITIVE_INFINITY;
+
+    return startTime < dayEnd.getTime() && endTime >= dayStart.getTime();
+}
+
+export function getTopSystemStatusEntryForDay(
+    entries: SystemStatusEntry[],
+    day: Date
+): SystemStatusEntry | null {
+    const dayEntries = entries.filter((entry: SystemStatusEntry): boolean =>
+        doesSystemStatusEntryOverlapDay(entry, day)
+    );
+
+    if (dayEntries.length === 0) {
+        return null;
+    }
+
+    const getDayEntryPriority = (entry: SystemStatusEntry): number => {
+        if (entry.category === SystemStatusCategory.MAINTENANCE) {
+            return ENTRY_PRIORITY.CURRENT_MAINTENANCE;
+        }
+
+        return getSystemStatusEntryPriority(entry, day);
+    };
+
+    return [...dayEntries].sort(
+        (left: SystemStatusEntry, right: SystemStatusEntry): number => {
+            const categoryDifference =
+                getDayEntryPriority(right) - getDayEntryPriority(left);
+            if (categoryDifference !== 0) {
+                return categoryDifference;
+            }
+
+            const leftStart = left.start?.getTime() ?? Number.NEGATIVE_INFINITY;
+            const rightStart =
+                right.start?.getTime() ?? Number.NEGATIVE_INFINITY;
+            if (rightStart !== leftStart) {
+                return rightStart - leftStart;
+            }
+
+            const affectedServiceDifference =
+                right.service_oids.length - left.service_oids.length;
+            if (affectedServiceDifference !== 0) {
+                return affectedServiceDifference;
+            }
+
+            return left.title.localeCompare(right.title);
+        }
+    )[0];
 }
 
 export function formatSystemStatusTimeRange(entry: SystemStatusEntry): string {
@@ -178,12 +294,17 @@ export function buildSystemStatusGroups(
                         const serviceEntries = [
                             ...(entriesByServiceId.get(service._id ?? "") ??
                                 []),
-                        ].sort(compareSystemStatusEntries);
+                        ];
+                        const relevantServiceEntries = serviceEntries
+                            .filter((entry: SystemStatusEntry): boolean =>
+                                isSystemStatusEntryRelevantForOverview(entry)
+                            )
+                            .sort(compareSystemStatusEntries);
 
                         return {
                             service,
                             entries: serviceEntries,
-                            topEntry: serviceEntries[0] ?? null,
+                            topEntry: relevantServiceEntries[0] ?? null,
                         };
                     }
                 )
@@ -199,19 +320,26 @@ export function buildSystemStatusGroups(
 
             const activeEntries = Array.from(
                 (groupedEntries.get(groupKey) ?? new Map()).values()
-            ).sort(
-                (left: SystemStatusEntry, right: SystemStatusEntry): number =>
-                    compareSystemStatusEntries(left, right, (entry) => {
-                        const affectedCountMap =
-                            groupedAffectedServiceCounts.get(groupKey) ??
-                            new Map();
-                        return (
-                            affectedCountMap.get(
-                                getSystemStatusEntryKey(entry)
-                            ) ?? 0
-                        );
-                    })
-            );
+            )
+                .filter((entry: SystemStatusEntry): boolean =>
+                    isSystemStatusEntryRelevantForOverview(entry)
+                )
+                .sort(
+                    (
+                        left: SystemStatusEntry,
+                        right: SystemStatusEntry
+                    ): number =>
+                        compareSystemStatusEntries(left, right, (entry) => {
+                            const affectedCountMap =
+                                groupedAffectedServiceCounts.get(groupKey) ??
+                                new Map();
+                            return (
+                                affectedCountMap.get(
+                                    getSystemStatusEntryKey(entry)
+                                ) ?? 0
+                            );
+                        })
+                );
 
             const firstService = sortedServices[0]?.service ?? null;
             const title =

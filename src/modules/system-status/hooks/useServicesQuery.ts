@@ -5,5 +5,6 @@ export default function useServicesQuery() {
     return useQuery({
         queryKey: ["system-status-services"],
         queryFn: getServices,
+        staleTime: 1000 * 60 * 5,
     });
 }

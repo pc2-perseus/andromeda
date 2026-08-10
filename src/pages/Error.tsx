@@ -4,7 +4,7 @@ import type { FallbackProps } from "react-error-boundary";
 
 // MUI imports
 import { Box, Button, Stack, Typography } from "@mui/material";
-import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import ErrorIcon from "@mui/icons-material/Error";
 import RefreshIcon from "@mui/icons-material/Refresh";
 
 // Custom imports
@@ -63,7 +63,11 @@ export default function Error({
                     bgcolor: "background.paper",
                 }}
             >
-                <Stack direction="row" spacing={2} alignItems="center">
+                <Stack
+                    direction="row"
+                    spacing={2}
+                    sx={{ alignItems: "center" }}
+                >
                     <Box
                         sx={(theme) => ({
                             width: 48,
@@ -78,13 +82,13 @@ export default function Error({
                                     : "rgba(211, 47, 47, 0.08)",
                         })}
                     >
-                        <ErrorOutlineIcon />
+                        <ErrorIcon />
                     </Box>
                     <Box>
                         <Typography
                             component="h1"
                             variant="h5"
-                            fontWeight={700}
+                            sx={{ fontWeight: 700 }}
                         >
                             {code ? `Error ${code}` : "Error"}
                         </Typography>
@@ -98,7 +102,7 @@ export default function Error({
                 <Stack
                     direction={{ xs: "column", sm: "row" }}
                     spacing={1.5}
-                    justifyContent="flex-end"
+                    sx={{ justifyContent: "flex-end" }}
                 >
                     <Button
                         variant="contained"

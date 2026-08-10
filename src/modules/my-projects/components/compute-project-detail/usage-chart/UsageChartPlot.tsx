@@ -1,4 +1,5 @@
 import React from "react";
+import dayjs from "dayjs";
 import { BarPlot } from "@mui/x-charts/BarChart";
 import {
     ChartsAxisHighlight,
@@ -20,7 +21,33 @@ function formatResourceValue(
     }
 
     const unit = resource.display_unit ? ` ${resource.display_unit}` : "";
-    return `${value.toLocaleString()}${unit}`;
+    return `${value.toLocaleString("en-US")}${unit}`;
+}
+
+function getXAxisLabelInterval(datasetSize: number): number {
+    if (datasetSize <= 16) {
+        return 2;
+    }
+
+    if (datasetSize <= 45) {
+        return 4;
+    }
+
+    if (datasetSize <= 120) {
+        return 7;
+    }
+
+    return Math.ceil(datasetSize / 12);
+}
+
+function formatXAxisLabel(value: string, datasetSize: number): string {
+    if (datasetSize <= 120) {
+        const date = dayjs.utc(value, "DD.MM.YY");
+        return date.isValid() ? date.format("DD.MM") : value;
+    }
+
+    const date = dayjs.utc(value, "DD.MM.YY");
+    return date.isValid() ? date.format("MMM YY") : value;
 }
 
 export default function UsageChartPlot({
@@ -36,6 +63,8 @@ export default function UsageChartPlot({
     resourceColorById: Map<string, string>;
     resourcesWithPhaseAverage: Set<string>;
 }): React.ReactElement {
+    const xAxisLabelInterval = getXAxisLabelInterval(dataset.length);
+
     return (
         <ChartsContainer
             dataset={dataset}
@@ -46,6 +75,11 @@ export default function UsageChartPlot({
                     dataKey: "label",
                     scaleType: "band",
                     categoryGapRatio: 0.35,
+                    tickLabelInterval: (_, index) =>
+                        index % xAxisLabelInterval === 0 ||
+                        index === dataset.length - 1,
+                    valueFormatter: (value: string) =>
+                        formatXAxisLabel(value, dataset.length),
                 },
             ]}
             yAxis={[
@@ -86,7 +120,7 @@ export default function UsageChartPlot({
                     })),
             ]}
             sx={{
-                "& .MuiLineElement-root": {
+                "& .MuiLineChart-line": {
                     strokeDasharray: "6 4",
                     strokeWidth: 2,
                 },

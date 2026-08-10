@@ -49,8 +49,12 @@ export default function Loading(): React.ReactElement {
                     }}
                 />
             </Box>
-            <Stack spacing={0.75} alignItems="center">
-                <Typography component="h1" variant="h5" fontWeight={700}>
+            <Stack spacing={0.75} sx={{ alignItems: "center" }}>
+                <Typography
+                    component="h1"
+                    variant="h5"
+                    sx={{ fontWeight: 700 }}
+                >
                     Andromeda
                 </Typography>
                 <Typography variant="body2" color="text.secondary">

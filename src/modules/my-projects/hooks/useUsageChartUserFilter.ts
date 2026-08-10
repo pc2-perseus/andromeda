@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type { ResourceUsage } from "../../../types/perseus/ResourceUsage.ts";
 
 export default function useUsageChartUserFilter({
@@ -8,7 +8,7 @@ export default function useUsageChartUserFilter({
     usage: ResourceUsage[];
     enableUserFilter: boolean;
 }) {
-    const [selectedUser, setSelectedUser] = useState<string | null>(null);
+    const [requestedUser, setSelectedUser] = useState<string | null>(null);
 
     const users = useMemo(
         () =>
@@ -22,17 +22,12 @@ export default function useUsageChartUserFilter({
         [usage]
     );
 
-    useEffect(() => {
-        if (selectedUser !== null && !users.includes(selectedUser)) {
-            setSelectedUser(null);
-        }
-    }, [selectedUser, users]);
-
-    useEffect(() => {
-        if (!enableUserFilter && selectedUser !== null) {
-            setSelectedUser(null);
-        }
-    }, [enableUserFilter, selectedUser]);
+    const selectedUser =
+        enableUserFilter &&
+        requestedUser !== null &&
+        users.includes(requestedUser)
+            ? requestedUser
+            : null;
 
     return {
         users,

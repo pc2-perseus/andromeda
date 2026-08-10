@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { Resource } from "../../../types/perseus/Resource.ts";
 import type { ResourceUsage } from "../../../types/perseus/ResourceUsage.ts";
 import type { GroupedCumulativeResource } from "./useGroupedCumulativeResources.ts";
@@ -24,7 +24,7 @@ export default function useUsageChartFilters({
     projectEnd: Date | null;
     enableUserFilter: boolean;
 }) {
-    const [selectedRange, setSelectedRange] =
+    const [requestedRange, setSelectedRange] =
         useState<UsageRange>(DEFAULT_USAGE_RANGE);
     const [showFilters, setShowFilters] = useState(false);
     const { users, selectedUser, setSelectedUser } = useUsageChartUserFilter({
@@ -40,8 +40,13 @@ export default function useUsageChartFilters({
     } = useUsageChartRange({
         usage,
         projectEnd,
-        selectedRange,
+        selectedRange: requestedRange,
     });
+    const selectedRange = availableRangeOptions.some(
+        (item) => item.value === requestedRange
+    )
+        ? requestedRange
+        : "all-time";
 
     const {
         selectedResources,
@@ -53,14 +58,6 @@ export default function useUsageChartFilters({
         resources,
         groupedResources,
     });
-
-    useEffect(() => {
-        if (
-            !availableRangeOptions.some((item) => item.value === selectedRange)
-        ) {
-            setSelectedRange("all-time");
-        }
-    }, [availableRangeOptions, selectedRange]);
 
     function resetFilters() {
         resetSelectedResources();

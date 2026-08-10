@@ -5,9 +5,7 @@ import { useNavigate } from "react-router-dom";
 // MUI imports
 import { Alert, Box, Card, CardContent, Skeleton } from "@mui/material";
 
-// Custom imports
-import StatusBarCard from "./components/StatusBarCard.tsx";
-import { SystemStatusCategory } from "../../types/perseus/SystemStatusCategory.ts";
+import StatusBarGroupCard from "./components/StatusBarGroupCard.tsx";
 import useEntriesQuery from "../system-status/hooks/useEntriesQuery.ts";
 import useServicesQuery from "../system-status/hooks/useServicesQuery.ts";
 import useSystemStatusGroups from "../system-status/hooks/useSystemStatusGroups.ts";
@@ -88,24 +86,19 @@ function StatusBarContent(): React.ReactElement | null {
                 },
             }}
         >
-            {groups.map((group) => (
-                <StatusBarCard
-                    key={group.key}
-                    name={group.title}
-                    category={
-                        group.topEntry?.category ?? SystemStatusCategory.RUNNING
-                    }
-                    message={
-                        group.topEntry?.title ?? "All services up and running"
-                    }
-                    activeEntryCount={group.statusChangeCount}
-                    onDetailsClick={
-                        showDetailsButton
-                            ? () => navigate("/system-status")
-                            : undefined
-                    }
-                />
-            ))}
+            {groups.map((group) => {
+                return (
+                    <StatusBarGroupCard
+                        key={group.key}
+                        group={group}
+                        onDetailsClick={
+                            showDetailsButton
+                                ? () => navigate("/system-status")
+                                : undefined
+                        }
+                    />
+                );
+            })}
         </Box>
     );
 }

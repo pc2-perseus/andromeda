@@ -12,15 +12,13 @@ async function findLastJobsPage(
 
     async function loadPage(page: number): Promise<Job[]> {
         if (!cache.has(page)) {
-            cache.set(
+            const response = await getJobs(
+                projectOid,
+                computeProjectId,
                 page,
-                await getJobs(
-                    projectOid,
-                    computeProjectId,
-                    page,
-                    JOB_SUGGESTION_PAGE_SIZE
-                )
+                JOB_SUGGESTION_PAGE_SIZE
             );
+            cache.set(page, response.jobs);
         }
 
         return cache.get(page) ?? [];

@@ -9,11 +9,13 @@ import ErrorIcon from "@mui/icons-material/Error";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import ConstructionIcon from "@mui/icons-material/Construction";
 
 // Custom imports
 import PulsatingDot from "../../../components/PulsatingDot.tsx";
 import WarningIcon from "@mui/icons-material/Warning";
 import { SystemStatusCategory } from "../../../types/perseus/SystemStatusCategory.ts";
+import useSystemStatusCategoryColor from "../../system-status/hooks/useSystemStatusCategoryColor.ts";
 
 export default function StatusBarCard({
     name,
@@ -28,31 +30,23 @@ export default function StatusBarCard({
     activeEntryCount: number;
     onDetailsClick?: () => void;
 }): React.ReactElement {
-    const color: string = {
-        [SystemStatusCategory.RUNNING]: "success",
-        [SystemStatusCategory.INFO]: "info",
-        [SystemStatusCategory.WARNING]: "warning",
-        [SystemStatusCategory.ERROR]: "error",
-    }[category];
+    const color = useSystemStatusCategoryColor(category);
 
     const icon: React.ReactElement = {
         [SystemStatusCategory.RUNNING]: (
-            <CheckCircleIcon
-                sx={{ fontSize: "inherit", color: `${color}.light` }}
-            />
+            <CheckCircleIcon sx={{ fontSize: "inherit", color }} />
         ),
         [SystemStatusCategory.INFO]: (
-            <InfoOutlinedIcon
-                sx={{ fontSize: "inherit", color: `${color}.light` }}
-            />
+            <InfoOutlinedIcon sx={{ fontSize: "inherit", color }} />
         ),
         [SystemStatusCategory.WARNING]: (
-            <WarningIcon
-                sx={{ fontSize: "inherit", color: `${color}.light` }}
-            />
+            <WarningIcon sx={{ fontSize: "inherit", color }} />
         ),
         [SystemStatusCategory.ERROR]: (
-            <ErrorIcon sx={{ fontSize: "inherit", color: `${color}.light` }} />
+            <ErrorIcon sx={{ fontSize: "inherit", color }} />
+        ),
+        [SystemStatusCategory.MAINTENANCE]: (
+            <ConstructionIcon sx={{ fontSize: "inherit", color }} />
         ),
     }[category];
 
@@ -78,7 +72,7 @@ export default function StatusBarCard({
                     </Typography>
                     <Box sx={{ alignSelf: "center" }}>
                         <PulsatingDot
-                            color={`${color}.light`}
+                            color={color}
                             pulsating={
                                 category === SystemStatusCategory.RUNNING
                             }

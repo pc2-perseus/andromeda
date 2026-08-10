@@ -12,18 +12,17 @@ import useClaimPCMutation from "../hooks/useClaimPCMutation.ts";
 export default function ClaimPC(): React.ReactElement {
     const auth = useAuth();
     const { proposalId }: { proposalId?: string } = useParams();
+    const [searchParams] = useSearchParams();
+    const token: string | null = searchParams.get("token");
+    const isInvalidLink = proposalId === undefined || token === null;
 
     const [status, setStatus] = React.useState<"loading" | "error" | "success">(
         "loading"
     );
-    const [searchParams] = useSearchParams();
     const { mutate } = useClaimPCMutation();
 
     React.useEffect(() => {
-        const token: string | null = searchParams.get("token");
-
-        if (proposalId === undefined || token === null) {
-            setStatus("error");
+        if (isInvalidLink) {
             return;
         }
 
@@ -34,11 +33,13 @@ export default function ClaimPC(): React.ReactElement {
                 onError: () => setStatus("error"),
             }
         );
-    }, [mutate, proposalId, searchParams]);
+    }, [isInvalidLink, mutate, proposalId, token]);
+
+    const visibleStatus = isInvalidLink ? "error" : status;
 
     return (
         <>
-            {status === "loading" && (
+            {visibleStatus === "loading" && (
                 <Box
                     sx={{
                         width: "100vw",
@@ -50,7 +51,7 @@ export default function ClaimPC(): React.ReactElement {
                     <CircularProgress />
                 </Box>
             )}
-            {status === "error" && (
+            {visibleStatus === "error" && (
                 <Box
                     sx={{
                         width: "100vw",
@@ -66,7 +67,7 @@ export default function ClaimPC(): React.ReactElement {
                     </Alert>
                 </Box>
             )}
-            {status === "success" && (
+            {visibleStatus === "success" && (
                 <Box
                     sx={{
                         width: "100vw",

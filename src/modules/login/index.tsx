@@ -1,6 +1,6 @@
 // React imports
 import React from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 // MUI imports
 import { Box } from "@mui/material";
@@ -9,31 +9,27 @@ import { Box } from "@mui/material";
 import CONFIG from "../../config.ts";
 import LoginForm from "./components/Form.tsx";
 import useAuth from "../../hooks/useAuth.ts";
+import { consumeAuthRedirect } from "../../utils/authRedirect.ts";
 
-export default function Login({
-    next = undefined,
-}: {
-    next?: string;
-}): React.ReactElement {
+export default function Login(): React.ReactElement {
     const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
     const auth = useAuth();
+    const didRedirect = React.useRef(false);
 
     // Redirect if logged in
     React.useEffect(() => {
-        if (!auth.validSession) {
+        if (!auth.validSession || didRedirect.current) {
             return;
         }
 
-        navigate(next ?? searchParams.get("next") ?? "/");
-    }, [auth.validSession, navigate, next, searchParams]);
+        didRedirect.current = true;
+        navigate(consumeAuthRedirect() ?? "/my-projects");
+    }, [auth.validSession, navigate]);
 
     function handleLoginRedirect(identifier?: string) {
-        const nextUrl = next ?? searchParams.get("next") ?? "/";
-
         window.location.href = identifier
-            ? `${CONFIG.GATEWAY_URL}/auth/login?kc_idp_hint=${identifier}&next=${encodeURIComponent(nextUrl)}`
-            : `${CONFIG.GATEWAY_URL}/auth/login?next=${encodeURIComponent(nextUrl)}`;
+            ? `${CONFIG.GATEWAY_URL}/auth/login?kc_idp_hint=${identifier}`
+            : `${CONFIG.GATEWAY_URL}/auth/login`;
     }
 
     return (

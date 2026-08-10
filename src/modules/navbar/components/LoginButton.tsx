@@ -21,6 +21,7 @@ import PersonIcon from "@mui/icons-material/Person";
 
 // Custom imports
 import useAuth from "../../../hooks/useAuth.ts";
+import { saveAuthRedirect } from "../../../utils/authRedirect.ts";
 
 export default function LoginButton(): React.ReactElement {
     const [menuAnchor, setMenuAnchor] = React.useState<HTMLElement | null>(
@@ -28,6 +29,7 @@ export default function LoginButton(): React.ReactElement {
     );
     const auth = useAuth();
     const location = useLocation();
+    const redirectPath = location.pathname + location.search + location.hash;
 
     return (
         <>
@@ -43,7 +45,8 @@ export default function LoginButton(): React.ReactElement {
                     <Button
                         component={Link}
                         variant="outlined"
-                        to={`/login?next=${location.pathname}`}
+                        to="/login"
+                        onClick={() => saveAuthRedirect(redirectPath)}
                         color="inherit"
                         sx={{
                             "&:hover": {

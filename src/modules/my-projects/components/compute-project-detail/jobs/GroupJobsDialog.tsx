@@ -2,19 +2,15 @@ import React from "react";
 import {
     Alert,
     Box,
+    Button,
     Dialog,
     DialogActions,
     DialogContent,
     DialogTitle,
-    Button,
     Stack,
     Typography,
 } from "@mui/material";
-import {
-    DataGrid,
-    type GridPaginationMeta,
-    type GridPaginationModel,
-} from "@mui/x-data-grid";
+import { DataGrid, type GridPaginationModel } from "@mui/x-data-grid";
 import type { Job } from "../../../../../types/perseus/Job.ts";
 import useIsPIorPC from "../../../hooks/useIsPIorPC.ts";
 import useJobsQuery from "../../../hooks/useJobsQuery.ts";
@@ -24,6 +20,10 @@ import Empty from "./Empty.tsx";
 import { createJobColumns } from "./columns.tsx";
 
 const DEFAULT_ROWS_PER_PAGE = 10;
+const DEFAULT_PAGINATION_MODEL: GridPaginationModel = {
+    page: 0,
+    pageSize: DEFAULT_ROWS_PER_PAGE,
+};
 
 export default function GroupJobsDialog({
     project,
@@ -41,26 +41,27 @@ export default function GroupJobsDialog({
     onOpenJobDetails: (job: Job) => void;
 }): React.ReactElement {
     const showUserColumn = useIsPIorPC(project);
-    const [paginationModel, setPaginationModel] =
-        React.useState<GridPaginationModel>({
-            page: 0,
-            pageSize: DEFAULT_ROWS_PER_PAGE,
+    const [paginationState, setPaginationState] = React.useState<{
+        groupJobId: string | null;
+        paginationModel: GridPaginationModel;
+    }>({
+        groupJobId: null,
+        paginationModel: DEFAULT_PAGINATION_MODEL,
+    });
+    const groupJobId = groupJob?._id ?? null;
+    const paginationModel =
+        paginationState.groupJobId === groupJobId
+            ? paginationState.paginationModel
+            : DEFAULT_PAGINATION_MODEL;
+
+    function handlePaginationModelChange(paginationModel: GridPaginationModel) {
+        setPaginationState({
+            groupJobId,
+            paginationModel,
         });
+    }
 
-    React.useEffect(() => {
-        if (open) {
-            setPaginationModel({
-                page: 0,
-                pageSize: DEFAULT_ROWS_PER_PAGE,
-            });
-        }
-    }, [open, groupJob?._id]);
-
-    const {
-        data: jobs,
-        isPending,
-        isError,
-    } = useJobsQuery({
+    const { data, isPending, isFetching, isError } = useJobsQuery({
         projectOid: project._id as string,
         computeProjectId,
         page: paginationModel.page + 1,
@@ -77,19 +78,6 @@ export default function GroupJobsDialog({
                 onOpenJobDetails,
             }),
         [onOpenJobDetails, showUserColumn]
-    );
-
-    const rowCount = jobs
-        ? jobs.length < paginationModel.pageSize
-            ? paginationModel.page * paginationModel.pageSize + jobs.length
-            : -1
-        : 0;
-
-    const paginationMeta = React.useMemo<GridPaginationMeta>(
-        () => ({
-            hasNextPage: jobs?.length === paginationModel.pageSize,
-        }),
-        [jobs, paginationModel.pageSize]
     );
 
     return (
@@ -128,20 +116,21 @@ export default function GroupJobsDialog({
                     >
                         <DataGrid
                             autoHeight
-                            rows={jobs ?? []}
+                            rows={data?.jobs ?? []}
                             columns={columns}
-                            rowCount={rowCount}
+                            rowCount={data?.count}
                             getRowId={(job) => job._id as string}
-                            paginationMeta={paginationMeta}
                             pagination
                             paginationMode="server"
                             paginationModel={paginationModel}
-                            onPaginationModelChange={setPaginationModel}
+                            onPaginationModelChange={
+                                handlePaginationModelChange
+                            }
                             pageSizeOptions={[10, 25, 50]}
                             disableRowSelectionOnClick
                             disableColumnResize
                             hideFooterSelectedRowCount
-                            loading={isPending}
+                            loading={isPending || isFetching}
                             slots={{
                                 noRowsOverlay: Empty,
                             }}

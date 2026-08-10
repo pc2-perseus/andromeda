@@ -1,5 +1,5 @@
 import getJobs from "../api/getJobs.ts";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 export default function useJobsQuery(params: {
     projectOid: string;
@@ -12,6 +12,7 @@ export default function useJobsQuery(params: {
     return useQuery({
         queryKey: ["jobs", params],
         enabled: params.enabled ?? true,
+        placeholderData: keepPreviousData,
         queryFn: () =>
             getJobs(
                 params.projectOid,

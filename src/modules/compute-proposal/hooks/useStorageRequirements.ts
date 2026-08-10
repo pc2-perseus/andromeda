@@ -5,8 +5,7 @@ export default (): [string | null, (value: string) => void] => {
     const { value, set } = useProjectStore(
         useShallow((state) => ({
             value: state.project.custom_fields.storage_requirements as
-                | string
-                | null,
+                string | null,
             set: state.setStorageRequirements,
         }))
     );

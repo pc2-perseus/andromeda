@@ -105,8 +105,7 @@ export function createJobColumns({
                     <Stack
                         direction="row"
                         spacing={1}
-                        alignItems="center"
-                        sx={{ minWidth: 0 }}
+                        sx={{ alignItems: "center", minWidth: 0 }}
                     >
                         <Typography variant="body2" noWrap>
                             {formatJobDisplayId(

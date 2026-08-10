@@ -8,11 +8,13 @@ export default function useUsageChartDatasetWithMax({
     chartResources,
     usedContingents,
     resources,
+    includePhaseAverage,
 }: {
     dataset: { [key: string]: number | string }[];
     chartResources: Resource[];
     usedContingents: UsedContingent[];
     resources: Resource[];
+    includePhaseAverage: boolean;
 }) {
     return useMemo(() => {
         const resourceById = new Map(
@@ -30,6 +32,10 @@ export default function useUsageChartDatasetWithMax({
             const enrichedPoint: { [key: string]: number | string | null } = {
                 ...point,
             };
+
+            if (!includePhaseAverage) {
+                return enrichedPoint;
+            }
 
             const dayLabel =
                 typeof point.day === "string"
@@ -89,5 +95,11 @@ export default function useUsageChartDatasetWithMax({
             datasetWithMax,
             resourcesWithPhaseAverage,
         };
-    }, [dataset, chartResources, usedContingents, resources]);
+    }, [
+        dataset,
+        chartResources,
+        usedContingents,
+        resources,
+        includePhaseAverage,
+    ]);
 }

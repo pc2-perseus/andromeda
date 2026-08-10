@@ -1,13 +1,15 @@
 import React from "react";
-import { Chip } from "@mui/material";
+import { Chip, Skeleton } from "@mui/material";
 import useCurrentResourcePriority from "../../../hooks/useCurrentResourcePriority.ts";
-import { useClusterResources } from "./ClusterResourcesContext.tsx";
+import useClusterResources from "./useClusterResources.ts";
+import useResourcePrioritiesQuery from "../../../hooks/useResourcePrioritiesQuery.ts";
 
 export default function ResourcePriority({
     resourceId,
 }: {
     resourceId: string;
 }): React.ReactElement {
+    const { isPending } = useResourcePrioritiesQuery();
     const { grantedResources, computeProjectId } = useClusterResources();
     const priority = useCurrentResourcePriority({
         grantedResources,
@@ -18,13 +20,19 @@ export default function ResourcePriority({
     return (
         <Chip
             size="small"
-            label={priority.label}
+            label={
+                isPending ? (
+                    <Skeleton width={50} />
+                ) : (
+                    (priority?.priority_id ?? "unknown")
+                )
+            }
             sx={
-                priority.color
+                priority?.indicator_color
                     ? {
-                          bgcolor: priority.color,
-                          borderColor: priority.color,
-                          color: priority.textColor ?? "common.white",
+                          bgcolor: priority.indicator_color,
+                          borderColor: priority.indicator_color,
+                          color: "common.white",
                       }
                     : undefined
             }

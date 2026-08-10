@@ -14,16 +14,16 @@ export default function LoginForm(props: {
     const { onPressLoginOption } = props;
     const { data: options, isPending, isError } = useLoginOptionsQuery();
 
-    if (isPending) {
-        return <FormSkeleton />;
-    }
-
     if (isError) {
         return (
             <Alert severity="error">
                 There was an error fetching the login options
             </Alert>
         );
+    }
+
+    if (isPending) {
+        return <FormSkeleton />;
     }
 
     const ldapOption = options.find(
@@ -47,14 +47,14 @@ export default function LoginForm(props: {
                 gap: 2,
             }}
         >
-            <Typography variant="h5" textAlign="center">
+            <Typography variant="h5" sx={{ textAlign: "center" }}>
                 Login
             </Typography>
 
             <Typography
                 variant="body2"
-                textAlign="center"
                 color="text.secondary"
+                sx={{ textAlign: "center" }}
             >
                 Choose your login method
             </Typography>

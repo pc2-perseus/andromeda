@@ -43,7 +43,11 @@ export default function SSHKeysSkeleton(): React.ReactElement {
                             p: 2,
                         }}
                     >
-                        <Grid container spacing={2} alignItems="center">
+                        <Grid
+                            container
+                            spacing={2}
+                            sx={{ alignItems: "center" }}
+                        >
                             <Grid size={{ xs: 12, md: 2 }}>
                                 <Skeleton variant="text" width="75%" />
                             </Grid>

@@ -106,8 +106,7 @@ export const projectSchema = yup
                 "Please enter an abbreviation",
                 function (value) {
                     const config = this.options.context?.config as
-                        | ModuleConfig
-                        | undefined;
+                        ModuleConfig | undefined;
 
                     return abbreviationWithoutPrefix(value, config).length > 0;
                 }
@@ -117,8 +116,7 @@ export const projectSchema = yup
                 `Abbreviation can contain a maximum of ${ABBREVIATION_MAX_LENGTH} characters`,
                 function (value) {
                     const config = this.options.context?.config as
-                        | ModuleConfig
-                        | undefined;
+                        ModuleConfig | undefined;
 
                     return (
                         abbreviationWithoutPrefix(value, config).length <=
@@ -131,8 +129,7 @@ export const projectSchema = yup
                 "Abbreviation may only contain letters and numbers (A-Z, a-z, 0-9)",
                 function (value) {
                     const config = this.options.context?.config as
-                        | ModuleConfig
-                        | undefined;
+                        ModuleConfig | undefined;
                     const abbreviation = abbreviationWithoutPrefix(
                         value,
                         config

@@ -5,9 +5,9 @@ import type { SystemStatusEntry } from "../../../types/perseus/SystemStatusEntry
 import type { SystemStatusService } from "../../../types/perseus/SystemStatusService.ts";
 import {
     formatSystemStatusTimeRange,
-    getSystemStatusCategoryColor,
     getSystemStatusEntryFingerprint,
 } from "../../system-status/functions/systemStatus.ts";
+import useSystemStatusCategoryColor from "../../system-status/hooks/useSystemStatusCategoryColor.ts";
 
 const COLLAPSED_DESCRIPTION_HEIGHT = 160;
 
@@ -20,14 +20,25 @@ export default function Banner({
     affectedServices: SystemStatusService[];
     onClose: () => void;
 }): React.ReactElement {
-    const [expanded, setExpanded] = React.useState<boolean>(false);
+    const [expandedState, setExpandedState] = React.useState<{
+        fingerprint: string;
+        expanded: boolean;
+    } | null>(null);
     const [hasOverflow, setHasOverflow] = React.useState<boolean>(false);
     const descriptionRef = React.useRef<HTMLDivElement | null>(null);
     const alertFingerprint = getSystemStatusEntryFingerprint(alert);
+    const alertColor = useSystemStatusCategoryColor(alert.category);
+    const expanded =
+        expandedState?.fingerprint === alertFingerprint
+            ? expandedState.expanded
+            : false;
 
-    React.useEffect(() => {
-        setExpanded(false);
-    }, [alertFingerprint]);
+    function toggleExpanded() {
+        setExpandedState({
+            fingerprint: alertFingerprint,
+            expanded: !expanded,
+        });
+    }
 
     React.useEffect(() => {
         const descriptionElement = descriptionRef.current;
@@ -52,17 +63,15 @@ export default function Banner({
 
     return (
         <Alert
-            severity={
-                getSystemStatusCategoryColor(alert.category) as
-                    | "success"
-                    | "info"
-                    | "warning"
-                    | "error"
-            }
+            severity="info"
             variant="outlined"
             onClose={onClose}
             sx={{
                 alignItems: "flex-start",
+                borderColor: alertColor,
+                ".MuiAlert-icon": {
+                    color: alertColor,
+                },
                 ".MuiAlert-message": {
                     width: "100%",
                 },
@@ -128,7 +137,7 @@ export default function Banner({
             {hasOverflow && (
                 <Button
                     size="small"
-                    onClick={() => setExpanded((current) => !current)}
+                    onClick={toggleExpanded}
                     sx={{ mt: 0.5, ml: -1 }}
                 >
                     {expanded ? "Show less" : "Read more"}

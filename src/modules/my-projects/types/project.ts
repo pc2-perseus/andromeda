@@ -31,3 +31,13 @@ export type ComputeProjectOverviewItem = {
     }[];
     pending_running_jobs: number;
 };
+
+export type ProjectManagementUser = {
+    person_id: string;
+    username: string | null;
+    title: string | null;
+    firstname: string;
+    lastname: string;
+    email: string;
+    compute_project_ids: string[];
+};

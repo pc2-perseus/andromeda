@@ -1,10 +1,9 @@
 import makeAPICall from "../../../api/makeAPICall.ts";
 import { HTTPMethod } from "../../../api/HTTPMethod.ts";
 
-export default async function executeLogout(next?: string): Promise<boolean> {
-    const logoutEndpoint = `/auth/logout${next ? `?next=${encodeURIComponent(next)}` : ""}`;
+export default async function executeLogout(): Promise<boolean> {
     try {
-        await makeAPICall<unknown>(HTTPMethod.GET, logoutEndpoint);
+        await makeAPICall<unknown>(HTTPMethod.GET, "/auth/logout");
         return true;
     } catch (e) {
         console.error("Logout request failed", e);

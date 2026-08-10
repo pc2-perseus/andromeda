@@ -6,8 +6,7 @@ import useConfig from "../../../hooks/useConfig.ts";
 export default function useClusterResourcesDangerThreshold(): number {
     const config = useConfig();
     const moduleConfig = getModuleConfig(config, "my-projects") as
-        | ModuleConfig
-        | undefined;
+        ModuleConfig | undefined;
 
     return useMemo(() => {
         const configured = moduleConfig?.cluster_resources_danger_threshold;

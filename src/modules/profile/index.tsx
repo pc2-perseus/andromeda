@@ -15,6 +15,7 @@ import ProfileSkeleton from "./components/ProfileSkeleton.tsx";
 import useProfileOptionsQuery from "./hooks/useProfileOptionsQuery.ts";
 import Email from "./components/email/index.tsx";
 import useAuth from "../../hooks/useAuth.ts";
+import Orcid from "./components/orcid/index.tsx";
 
 export default function Profile(): React.ReactElement {
     const [searchParams] = useSearchParams();
@@ -141,6 +142,8 @@ export default function Profile(): React.ReactElement {
                             <Name />
                             <Divider />
                             <Email />
+                            <Divider />
+                            <Orcid />
                             <Divider />
                             <Nationalities
                                 nationalities={options.nationalities}

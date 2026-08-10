@@ -26,11 +26,12 @@ function PersonRow({
 }): React.ReactElement {
     return (
         <Stack
-            component="span"
             direction="row"
             spacing={0.75}
-            alignItems="center"
-            color="text.secondary"
+            sx={{
+                alignItems: "center",
+                color: "text.secondary",
+            }}
         >
             {icon}
             <Typography component="span" variant="body2" color="text.secondary">

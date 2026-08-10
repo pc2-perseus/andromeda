@@ -26,7 +26,7 @@ export default function SelectFilters({
     users: string[];
 }): React.ReactElement {
     return (
-        <Stack direction={"row"} gap={2}>
+        <Stack direction="row" sx={{ gap: 2 }}>
             <FormControl fullWidth>
                 <InputLabel id="usage-chart-range-filter-label">
                     Range

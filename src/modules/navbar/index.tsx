@@ -44,20 +44,14 @@ export default function Navbar(): React.ReactElement {
     const auth = useAuth();
     const config = useConfig();
     const { isSaving, error: saveError } = useSave();
-    const [snackbarOpen, setSnackbarOpen] = React.useState<boolean>(false);
-    const [snackbarMessage, setSnackbarMessage] =
-        React.useState<string>("Save failed");
-    const [lastSaveError, setLastSaveError] = React.useState<string | null>(
-        null
-    );
+    const [dismissedSaveError, setDismissedSaveError] = React.useState<
+        string | null
+    >(null);
+    const snackbarOpen = Boolean(saveError && saveError !== dismissedSaveError);
 
-    React.useEffect(() => {
-        if (saveError && saveError !== lastSaveError) {
-            setSnackbarMessage(saveError);
-            setSnackbarOpen(true);
-            setLastSaveError(saveError);
-        }
-    }, [saveError, lastSaveError]);
+    function closeSaveErrorSnackbar() {
+        setDismissedSaveError(saveError);
+    }
 
     const navbarItems: NavbarItem[] = mergeDuplicateNavbarItems(
         filterEnabledNavbarItems(moduleNavbarItems, config)
@@ -163,15 +157,15 @@ export default function Navbar(): React.ReactElement {
             <Snackbar
                 open={snackbarOpen}
                 autoHideDuration={4000}
-                onClose={() => setSnackbarOpen(false)}
+                onClose={closeSaveErrorSnackbar}
                 anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
             >
                 <Alert
-                    onClose={() => setSnackbarOpen(false)}
+                    onClose={closeSaveErrorSnackbar}
                     severity="error"
                     variant="filled"
                 >
-                    {snackbarMessage}
+                    {saveError ?? "Save failed"}
                 </Alert>
             </Snackbar>
             {mobileMenuOpen && (

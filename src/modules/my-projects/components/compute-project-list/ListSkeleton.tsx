@@ -75,7 +75,7 @@ export default function ListSkeleton(): React.ReactElement {
                                 <Stack
                                     direction={{ xs: "column", sm: "row" }}
                                     spacing={{ xs: 1.5, sm: 4, md: 10 }}
-                                    alignItems="stretch"
+                                    sx={{ alignItems: "stretch" }}
                                 >
                                     <Skeleton
                                         variant="rounded"
@@ -85,12 +85,12 @@ export default function ListSkeleton(): React.ReactElement {
 
                                     <Stack
                                         spacing={0.75}
-                                        justifyContent="flex-end"
-                                        alignItems={{
-                                            xs: "flex-start",
-                                            sm: "flex-end",
-                                        }}
                                         sx={{
+                                            justifyContent: "flex-end",
+                                            alignItems: {
+                                                xs: "flex-start",
+                                                sm: "flex-end",
+                                            },
                                             flexShrink: 0,
                                         }}
                                     >

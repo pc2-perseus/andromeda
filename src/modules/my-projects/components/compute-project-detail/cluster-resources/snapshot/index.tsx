@@ -7,7 +7,7 @@ import {
     Divider,
     Typography,
 } from "@mui/material";
-import { useClusterResources } from "../ClusterResourcesContext.tsx";
+import useClusterResources from "../useClusterResources.ts";
 import SnapshotResourcePie from "./SnapshotResourcePie.tsx";
 
 export default function SnapshotResourcesCard(): React.ReactElement {

@@ -71,7 +71,9 @@ export default function InformationCard({
                                         ) : null}
                                     </Stack>
                                 }
-                                secondaryTypographyProps={{ component: "div" }}
+                                slotProps={{
+                                    secondary: { component: "div" },
+                                }}
                             />
                         </ListItem>
                         <Divider />
@@ -83,8 +85,10 @@ export default function InformationCard({
                                         .length > 0 ? (
                                         <Stack
                                             direction="row"
-                                            gap={0.75}
-                                            flexWrap="wrap"
+                                            sx={{
+                                                gap: 0.75,
+                                                flexWrap: "wrap",
+                                            }}
                                         >
                                             {project.state_machine.current_states.map(
                                                 (state) => (
@@ -99,7 +103,9 @@ export default function InformationCard({
                                         "Not available"
                                     )
                                 }
-                                secondaryTypographyProps={{ component: "div" }}
+                                slotProps={{
+                                    secondary: { component: "div" },
+                                }}
                             />
                         </ListItem>
 
@@ -132,9 +138,7 @@ export default function InformationCard({
                     {canAccessProject && computeProjectId ? (
                         <Button
                             component={RouterLink}
-                            to={`/my-projects/${projectId}/${encodeURIComponent(
-                                computeProjectId
-                            )}/project-manager`}
+                            to={`/my-projects/${projectId}/project-manager`}
                             size="small"
                             variant="outlined"
                             fullWidth

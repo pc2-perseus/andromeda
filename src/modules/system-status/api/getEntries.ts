@@ -6,7 +6,7 @@ import type { SystemStatusEntry } from "../../../types/perseus/SystemStatusEntry
 export default async function getEntries(): Promise<SystemStatusEntry[]> {
     const response = await makeAPICall<{
         entries: SystemStatusEntry[];
-    }>(HTTPMethod.GET, "/perseus/service/SystemStatus/entries");
+    }>(HTTPMethod.GET, "/perseus/service/Andromeda/system-status/entries");
 
     return isoToDates(response.entries);
 }

@@ -11,7 +11,7 @@ import {
     TableRow,
     Typography,
 } from "@mui/material";
-import { useClusterResources } from "../ClusterResourcesContext.tsx";
+import useClusterResources from "../useClusterResources.ts";
 import ResourcePriority from "../ResourcePriority.tsx";
 import UsageProgress from "./UsageProgress.tsx";
 

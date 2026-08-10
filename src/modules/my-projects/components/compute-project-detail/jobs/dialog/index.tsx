@@ -70,7 +70,7 @@ export default function DetailDialog({
                                     <Stack
                                         direction="row"
                                         spacing={1}
-                                        alignItems="center"
+                                        sx={{ alignItems: "center" }}
                                     >
                                         <StateIcon state={job.state} />
                                         <Typography>

@@ -16,12 +16,14 @@ export default function useIdentifierCheck({
 }: UseIdentifierCheckArgs) {
     const [isChecking, setIsChecking] = React.useState(false);
     const [result, setResult] = React.useState<boolean | null>(null);
+    const canCheck =
+        enabled && Boolean(identifierLinkPrefix) && identifier.length > 0;
 
     const debounceTimeoutRef = React.useRef<number | null>(null);
     const abortControllerRef = React.useRef<AbortController | null>(null);
 
     const checkIdentifier = React.useCallback(async () => {
-        if (!enabled || !identifierLinkPrefix || identifier.length === 0) {
+        if (!canCheck || !identifierLinkPrefix) {
             setIsChecking(false);
             setResult(null);
             return;
@@ -60,12 +62,10 @@ export default function useIdentifierCheck({
 
             setIsChecking(false);
         }
-    }, [enabled, identifier, identifierLinkPrefix]);
+    }, [canCheck, identifier, identifierLinkPrefix]);
 
     React.useEffect(() => {
-        if (!enabled || !identifierLinkPrefix || identifier.length === 0) {
-            setIsChecking(false);
-            setResult(null);
+        if (!canCheck) {
             return;
         }
 
@@ -85,10 +85,10 @@ export default function useIdentifierCheck({
 
             abortControllerRef.current?.abort();
         };
-    }, [checkIdentifier, enabled, identifier, identifierLinkPrefix]);
+    }, [canCheck, checkIdentifier]);
 
     return {
-        checkingIdentifier: isChecking,
-        identifierCheckResult: result,
+        checkingIdentifier: canCheck ? isChecking : false,
+        identifierCheckResult: canCheck ? result : null,
     };
 }

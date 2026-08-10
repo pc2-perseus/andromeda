@@ -115,11 +115,11 @@ export default function ListItem({
                             <Stack
                                 sx={{
                                     textAlign: { xs: "left", sm: "right" },
-                                }}
-                                justifyContent="flex-end"
-                                alignItems={{
-                                    xs: "flex-start",
-                                    sm: "flex-end",
+                                    justifyContent: "flex-end",
+                                    alignItems: {
+                                        xs: "flex-start",
+                                        sm: "flex-end",
+                                    },
                                 }}
                             >
                                 <Typography

@@ -51,19 +51,21 @@ export default function SSHKeysList({
             {/* Header */}
             <Grid container spacing={2} sx={{ px: 2 }}>
                 <Grid size={{ xs: 12, md: 2 }} sx={centerCellStyle}>
-                    <Typography fontWeight="bold">Title</Typography>
+                    <Typography sx={{ fontWeight: "bold" }}>Title</Typography>
                 </Grid>
 
                 <Grid size={{ xs: 12, md: 6 }} sx={centerCellStyle}>
-                    <Typography fontWeight="bold">SSH public key</Typography>
+                    <Typography sx={{ fontWeight: "bold" }}>
+                        SSH public key
+                    </Typography>
                 </Grid>
 
                 <Grid size={{ xs: 12, md: 2 }} sx={centerCellStyle}>
-                    <Typography fontWeight="bold">Created</Typography>
+                    <Typography sx={{ fontWeight: "bold" }}>Created</Typography>
                 </Grid>
 
                 <Grid size={{ xs: 12, md: 2 }} sx={centerCellStyle}>
-                    <Typography fontWeight="bold">Action</Typography>
+                    <Typography sx={{ fontWeight: "bold" }}>Action</Typography>
                 </Grid>
             </Grid>
 
@@ -77,9 +79,9 @@ export default function SSHKeysList({
                         p: 2,
                     }}
                 >
-                    <Grid container spacing={2} alignItems="center">
+                    <Grid container spacing={2} sx={{ alignItems: "center" }}>
                         <Grid size={{ xs: 12, md: 2 }} sx={centerCellStyle}>
-                            <Typography fontWeight="bold">
+                            <Typography sx={{ fontWeight: "bold" }}>
                                 {key.name}
                             </Typography>
                         </Grid>

@@ -13,8 +13,10 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 
 type RootProps = BaseNumberField.Root.Props;
 
-export interface NumberFieldProps
-    extends Omit<RootProps, "id" | "value" | "onValueChange" | "slotProps"> {
+export interface NumberFieldProps extends Omit<
+    RootProps,
+    "id" | "value" | "onValueChange" | "slotProps"
+> {
     id?: string;
     value: number;
     onChange?: (value: number) => void;

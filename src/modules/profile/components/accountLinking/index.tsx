@@ -13,6 +13,16 @@ export default function AccountLinking(): React.ReactElement {
         severity: "success" | "error";
         text: string;
     } | null>(null);
+    const initialLinkStatus = React.useRef(searchParams.get("link_status"));
+    const linkStatus = searchParams.get("link_status");
+    const linkStatusMessage =
+        initialLinkStatus.current === "success"
+            ? {
+                  severity: "success" as const,
+                  text: "Your identity was linked successfully.",
+              }
+            : null;
+    const visibleMessage = message ?? linkStatusMessage;
 
     const {
         data: linkedProviders,
@@ -32,20 +42,14 @@ export default function AccountLinking(): React.ReactElement {
     });
 
     React.useEffect(() => {
-        const linkStatus = searchParams.get("link_status");
-
         if (linkStatus === "success") {
-            refetch();
-            setMessage({
-                severity: "success",
-                text: "Your identity was linked successfully.",
-            });
+            void refetch();
 
             const updatedSearchParams = new URLSearchParams(searchParams);
             updatedSearchParams.delete("link_status");
             setSearchParams(updatedSearchParams, { replace: true });
         }
-    }, [refetch, searchParams, setSearchParams]);
+    }, [linkStatus, refetch, searchParams, setSearchParams]);
 
     if (isLinkedProvidersPending || isLoginOptionsPending) {
         return <></>;
@@ -67,8 +71,10 @@ export default function AccountLinking(): React.ReactElement {
                 Link multiple login providers to your account.
             </Typography>
 
-            {message && (
-                <Alert severity={message.severity}>{message.text}</Alert>
+            {visibleMessage && (
+                <Alert severity={visibleMessage.severity}>
+                    {visibleMessage.text}
+                </Alert>
             )}
 
             <ProviderList

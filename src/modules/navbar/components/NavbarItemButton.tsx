@@ -51,7 +51,9 @@ export default function NavbarItemButton({
                     pl: 1.5,
                 }}
             >
-                <Typography textTransform="none">{item.title}</Typography>
+                <Typography sx={{ textTransform: "none" }}>
+                    {item.title}
+                </Typography>
 
                 {children.length > 0 && <ArrowDropDownIcon />}
             </Button>

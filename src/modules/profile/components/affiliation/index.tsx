@@ -22,6 +22,13 @@ import InstituteSelect from "./InstituteSelect.tsx";
 import useAuth from "../../../../hooks/useAuth.ts";
 import useSaveAffiliationMutation from "../../hooks/useSaveAffiliationMutation.ts";
 
+type AffiliationDraft = {
+    country: string;
+    state: string | null;
+    organization: Organization | null;
+    institute: Institute | null;
+};
+
 export default function Index({
     organizations,
     institutes,
@@ -31,58 +38,86 @@ export default function Index({
     institutes: Institute[];
     nationalities: Nationality[];
 }): React.ReactElement | null {
-    const [loading, setLoading] = React.useState<boolean>(true);
-
     const auth = useAuth();
+    const me = auth.person;
+
     const saveMutation = useSaveAffiliationMutation();
 
-    const [state, setState] = React.useState<string | null>(null);
-    const [country, setCountry] = React.useState<string>("DE");
+    const savedInstitute: Institute | null =
+        me?.affiliation_oid === null || me?.affiliation_oid === undefined
+            ? null
+            : (institutes.find((ins) => ins._id === me.affiliation_oid) ??
+              null);
 
-    const [selectedAffiliation, setSelectedAffiliation] = React.useState<{
-        organization: Organization | null;
-        institute: Institute | null;
-    }>({ organization: null, institute: null });
+    const savedOrganization: Organization | null =
+        savedInstitute === null
+            ? null
+            : (organizations.find(
+                  (org) => org._id === savedInstitute.organization_id
+              ) ?? null);
+
+    const savedDraft: AffiliationDraft = {
+        country: savedOrganization?.location?.country ?? "DE",
+        state: savedOrganization?.location?.state ?? null,
+        organization: savedOrganization,
+        institute: savedInstitute,
+    };
+
+    const [draft, setDraft] = React.useState<AffiliationDraft | null>(null);
+
+    const selectedAffiliation = draft ?? savedDraft;
+    const { country, state, organization, institute } = selectedAffiliation;
+
+    function handleCountryChange(country: string) {
+        setDraft({
+            country,
+            state: null,
+            organization: null,
+            institute: null,
+        });
+    }
+
+    function handleStateChange(state: string | null) {
+        setDraft({
+            country,
+            state,
+            organization: null,
+            institute: null,
+        });
+    }
+
+    function handleOrganizationChange(organization: Organization | null) {
+        setDraft({
+            country,
+            state,
+            organization,
+            institute: null,
+        });
+    }
+
+    function handleInstituteChange(institute: Institute | null) {
+        setDraft({
+            country,
+            state,
+            organization,
+            institute,
+        });
+    }
 
     function updateAffiliation() {
         if (
-            selectedAffiliation.organization !== null &&
-            selectedAffiliation.institute !== null &&
-            selectedAffiliation.institute._id !== null &&
-            selectedAffiliation.institute._id !== auth.person?.affiliation_oid
+            organization !== null &&
+            institute !== null &&
+            institute._id !== null &&
+            institute._id !== me?.affiliation_oid
         ) {
-            saveMutation.mutate(selectedAffiliation.institute._id);
+            void saveMutation.mutateAsync(institute._id).then(() => {
+                setDraft(null);
+            });
         }
     }
 
-    React.useEffect(() => {
-        if (auth.person === null || auth.person.affiliation_oid === null) {
-            setSelectedAffiliation({ organization: null, institute: null });
-            setCountry("DE");
-            setState(null);
-        } else {
-            const institute: Institute | null =
-                institutes.filter(
-                    (ins) => ins._id === auth.person?.affiliation_oid
-                )[0] ?? null;
-            let organization: Organization | null = null;
-            if (institute !== null) {
-                organization =
-                    organizations.filter(
-                        (org) => org._id === institute.organization_id
-                    )[0] ?? null;
-            }
-            setSelectedAffiliation({
-                organization: organization,
-                institute: institute,
-            });
-            setCountry(organization?.location?.country ?? "DE");
-            setState(organization?.location?.state ?? null);
-        }
-        setLoading(false);
-    }, [auth, organizations, institutes]);
-
-    if (loading || auth.person === null) {
+    if (me === null) {
         return (
             <Box
                 sx={{
@@ -98,10 +133,7 @@ export default function Index({
     }
 
     const isAffiliationComplete =
-        country !== null &&
-        state !== null &&
-        selectedAffiliation.organization !== null &&
-        selectedAffiliation.institute !== null;
+        state !== null && organization !== null && institute !== null;
 
     return (
         <>
@@ -117,15 +149,7 @@ export default function Index({
                 <Grid size={{ xs: 12, md: 6 }}>
                     <CountrySelect
                         selected={country}
-                        onChange={(country) => {
-                            setCountry(country);
-                            setState(null);
-
-                            setSelectedAffiliation({
-                                organization: null,
-                                institute: null,
-                            });
-                        }}
+                        onChange={handleCountryChange}
                         organizations={organizations}
                         nationalities={nationalities}
                     />
@@ -134,14 +158,7 @@ export default function Index({
                     <StateSelect
                         country={country}
                         selected={state}
-                        onChange={(newState) => {
-                            setState(newState);
-
-                            setSelectedAffiliation({
-                                organization: null,
-                                institute: null,
-                            });
-                        }}
+                        onChange={handleStateChange}
                         organizations={organizations}
                     />
                 </Grid>
@@ -149,26 +166,16 @@ export default function Index({
                     <OrganizationSelect
                         country={country}
                         state={state}
-                        selected={selectedAffiliation.organization}
-                        onChange={(newValue) =>
-                            setSelectedAffiliation({
-                                organization: newValue,
-                                institute: null,
-                            })
-                        }
+                        selected={organization}
+                        onChange={handleOrganizationChange}
                         organizations={organizations}
                     />
                 </Grid>
                 <Grid size={{ xs: 12, md: 6 }}>
                     <InstituteSelect
-                        organization={selectedAffiliation.organization}
-                        selected={selectedAffiliation.institute}
-                        onChange={(newValue) =>
-                            setSelectedAffiliation({
-                                organization: selectedAffiliation.organization,
-                                institute: newValue,
-                            })
-                        }
+                        organization={organization}
+                        selected={institute}
+                        onChange={handleInstituteChange}
                         institutes={institutes}
                     />
                 </Grid>
@@ -179,44 +186,29 @@ export default function Index({
                         disabled={
                             saveMutation.isPending ||
                             !isAffiliationComplete ||
-                            (selectedAffiliation.institute?._id ?? null) ===
-                                auth.person.affiliation_oid
+                            (institute?._id ?? null) === me?.affiliation_oid
                         }
                         onClick={updateAffiliation}
                     >
                         Save changes
                     </Button>
                 </Grid>
-                {selectedAffiliation.institute &&
-                    selectedAffiliation.organization && (
-                        <Grid size={12}>
-                            <Typography>
-                                <strong>Institute name:</strong>
-                            </Typography>
-                            <Typography>
-                                {selectedAffiliation.institute.name}
-                            </Typography>
-                            <Typography sx={{ mt: 1 }}>
-                                <strong>Institute address:</strong>
-                            </Typography>
-                            <Typography>
-                                {
-                                    selectedAffiliation.organization.location
-                                        ?.street
-                                }
-                            </Typography>
-                            <Typography>
-                                {
-                                    selectedAffiliation.organization.location
-                                        ?.postal_code
-                                }{" "}
-                                {
-                                    selectedAffiliation.organization.location
-                                        ?.city
-                                }
-                            </Typography>
-                        </Grid>
-                    )}
+                {institute && organization && (
+                    <Grid size={12}>
+                        <Typography>
+                            <strong>Institute name:</strong>
+                        </Typography>
+                        <Typography>{institute.name}</Typography>
+                        <Typography sx={{ mt: 1 }}>
+                            <strong>Institute address:</strong>
+                        </Typography>
+                        <Typography>{organization.location?.street}</Typography>
+                        <Typography>
+                            {organization.location?.postal_code}{" "}
+                            {organization.location?.city}
+                        </Typography>
+                    </Grid>
+                )}
             </Grid>
         </>
     );

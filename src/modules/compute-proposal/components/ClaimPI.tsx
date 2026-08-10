@@ -10,18 +10,17 @@ import useClaimPIMutation from "../hooks/useClaimPIMutation.ts";
 
 export default function ClaimPI(): React.ReactElement {
     const { proposalId }: { proposalId?: string } = useParams();
+    const [searchParams] = useSearchParams();
+    const token: string | null = searchParams.get("token");
+    const isInvalidLink = proposalId === undefined || token === null;
 
     const [status, setStatus] = React.useState<"loading" | "error">("loading");
-    const [searchParams] = useSearchParams();
     const { mutate } = useClaimPIMutation();
 
     const navigate = useNavigate();
 
     React.useEffect(() => {
-        const token: string | null = searchParams.get("token");
-
-        if (proposalId === undefined || token === null) {
-            setStatus("error");
+        if (isInvalidLink) {
             return;
         }
 
@@ -38,11 +37,13 @@ export default function ClaimPI(): React.ReactElement {
                 onError: () => setStatus("error"),
             }
         );
-    }, [mutate, navigate, proposalId, searchParams]);
+    }, [isInvalidLink, mutate, navigate, proposalId, token]);
+
+    const visibleStatus = isInvalidLink ? "error" : status;
 
     return (
         <>
-            {status === "loading" && (
+            {visibleStatus === "loading" && (
                 <Box
                     sx={{
                         width: "100vw",
@@ -54,7 +55,7 @@ export default function ClaimPI(): React.ReactElement {
                     <CircularProgress />
                 </Box>
             )}
-            {status === "error" && (
+            {visibleStatus === "error" && (
                 <Box
                     sx={{
                         width: "100vw",

@@ -3,6 +3,7 @@ export const SystemStatusCategory = {
     INFO: "info",
     WARNING: "warning",
     ERROR: "error",
+    MAINTENANCE: "maintenance",
 } as const;
 
 export type SystemStatusCategory =

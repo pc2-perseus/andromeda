@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Alert, Stack, type StackProps } from "@mui/material";
 import type { MyProject } from "../../../types/project.ts";
 import type { ComputeProject } from "../../../../../types/perseus/ComputeProject.ts";
@@ -30,7 +30,6 @@ export default function UsageChart({
     }
 
     const resources = useCumulativeResources();
-    const groupedResources = useGroupedCumulativeResources();
     const {
         data: allUsage,
         isPending,
@@ -40,6 +39,12 @@ export default function UsageChart({
         computeProjectId: computeProject.compute_project_id,
     });
     const usage = useCumulativeUsage(allUsage || []);
+    const scopedResources = useMemo(() => {
+        const usedResourceIds = new Set(usage.map((item) => item.resource_id));
+
+        return resources.filter((resource) => usedResourceIds.has(resource.id));
+    }, [usage, resources]);
+    const groupedResources = useGroupedCumulativeResources(scopedResources);
 
     const {
         data: usedContingents,
@@ -68,7 +73,7 @@ export default function UsageChart({
         handleToggleCluster,
     } = useUsageChartFilters({
         usage: usage || [],
-        resources,
+        resources: scopedResources,
         groupedResources,
         projectEnd: project.end,
         enableUserFilter: showUserFilter,
@@ -90,12 +95,14 @@ export default function UsageChart({
         max: filterEndDate,
         selectedUser,
     });
+    const showSuggestedLimits = dataset.length < 365;
     const { datasetWithMax, resourcesWithPhaseAverage } =
         useUsageChartDatasetWithMax({
             dataset,
             chartResources,
             usedContingents: usedContingents || [],
-            resources,
+            resources: scopedResources,
+            includePhaseAverage: showSuggestedLimits,
         });
 
     if (isPending || isUsedContingentsPending) {
@@ -110,7 +117,7 @@ export default function UsageChart({
         );
     }
 
-    if (resources.length === 0) {
+    if (scopedResources.length === 0) {
         return <Alert severity="info">No cumulative resources found.</Alert>;
     }
 

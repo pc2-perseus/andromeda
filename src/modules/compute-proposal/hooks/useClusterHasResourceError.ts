@@ -71,7 +71,7 @@ export default (cluster: Cluster) => {
                     );
                     return Boolean(
                         otherResource &&
-                            selectedClusterIds.has(otherResource.cluster_id)
+                        selectedClusterIds.has(otherResource.cluster_id)
                     );
                 });
 

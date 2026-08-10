@@ -1,10 +1,9 @@
 import dayjs from "dayjs";
 import { useMemo } from "react";
 import type { ResourceValue } from "../../../types/perseus/ResourceValue.ts";
-import useResourcePriorityMap, {
-    type ResourcePriorityInfo,
-} from "./useResourcePriorityMap.ts";
+import useResourcePriorityMap from "./useResourcePriorityMap.ts";
 import useResourcePrioritiesQuery from "./useResourcePrioritiesQuery.ts";
+import type { ResourcePriority } from "../../../types/perseus/ResourcePriority.ts";
 
 export default function useCurrentResourcePriority({
     grantedResources,
@@ -14,25 +13,13 @@ export default function useCurrentResourcePriority({
     grantedResources: ResourceValue[];
     resourceId: string;
     computeProjectId: string;
-}): ResourcePriorityInfo {
+}): ResourcePriority | null {
     const { data, isPending, isError } = useResourcePrioritiesQuery();
     const priorityLabelByValue = useResourcePriorityMap(data || []);
 
     return useMemo(() => {
-        if (isPending) {
-            return {
-                label: "loading",
-                color: null,
-                textColor: null,
-            };
-        }
-
-        if (isError) {
-            return {
-                label: "Error",
-                color: null,
-                textColor: null,
-            };
+        if (isPending || isError) {
+            return null;
         }
 
         const today = dayjs();
@@ -57,12 +44,10 @@ export default function useCurrentResourcePriority({
 
         return (
             priorityLabelByValue.get(
-                (currentPriority ?? fallbackPriority)?.priority ?? Number.NaN
-            ) ?? {
-                label: "unknown",
-                color: null,
-                textColor: null,
-            }
+                currentPriority?.priority ??
+                    fallbackPriority?.priority ??
+                    Number.NaN
+            ) ?? null
         );
     }, [
         grantedResources,

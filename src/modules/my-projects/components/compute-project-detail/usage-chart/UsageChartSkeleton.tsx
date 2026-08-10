@@ -9,8 +9,10 @@ export default function UsageChartSkeleton({
             <Skeleton variant="rounded" height={440} />
             <Stack
                 direction="row"
-                justifyContent="space-between"
-                alignItems="center"
+                sx={{
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                }}
             >
                 <Skeleton variant="text" width={72} height={28} />
                 <Stack direction="row" spacing={1}>

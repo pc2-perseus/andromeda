@@ -36,13 +36,19 @@ export default function Loading(): React.ReactElement {
                                 height={30}
                                 sx={{ mb: 1.5 }}
                             />
-                            <Stack direction="row" spacing={2} flexWrap="wrap">
+                            <Stack
+                                direction="row"
+                                spacing={2}
+                                sx={{ flexWrap: "wrap" }}
+                            >
                                 {[0, 1].map((resourceIndex) => (
                                     <Stack
                                         key={resourceIndex}
                                         spacing={0.5}
-                                        alignItems="center"
-                                        sx={{ width: 140 }}
+                                        sx={{
+                                            alignItems: "center",
+                                            width: 140,
+                                        }}
                                     >
                                         <Skeleton
                                             variant="rounded"

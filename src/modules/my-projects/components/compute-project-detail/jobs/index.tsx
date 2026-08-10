@@ -1,10 +1,6 @@
 import React from "react";
 import { Alert, Box, Stack } from "@mui/material";
-import {
-    DataGrid,
-    type GridPaginationMeta,
-    type GridPaginationModel,
-} from "@mui/x-data-grid";
+import { DataGrid, type GridPaginationModel } from "@mui/x-data-grid";
 import type { Job } from "../../../../../types/perseus/Job.ts";
 import useIsPIorPC from "../../../hooks/useIsPIorPC.ts";
 import useJobsQuery from "../../../hooks/useJobsQuery.ts";
@@ -37,11 +33,7 @@ export default function JobTable({
             pageSize: DEFAULT_ROWS_PER_PAGE,
         });
 
-    const {
-        data: jobs,
-        isPending,
-        isError,
-    } = useJobsQuery({
+    const { data, isPending, isFetching, isError } = useJobsQuery({
         projectOid: project._id as string,
         computeProjectId: computeProjectId,
         page: paginationModel.page + 1,
@@ -56,19 +48,6 @@ export default function JobTable({
                 onOpenGroupDetails: setSelectedGroupJob,
             }),
         [showUserColumn]
-    );
-
-    const rowCount = jobs
-        ? jobs.length < paginationModel.pageSize
-            ? paginationModel.page * paginationModel.pageSize + jobs.length
-            : -1
-        : 0;
-
-    const paginationMeta = React.useMemo<GridPaginationMeta>(
-        () => ({
-            hasNextPage: jobs?.length === paginationModel.pageSize,
-        }),
-        [jobs, paginationModel.pageSize]
     );
 
     return (
@@ -96,11 +75,10 @@ export default function JobTable({
             >
                 <DataGrid
                     autoHeight
-                    rows={jobs ?? []}
+                    rows={data?.jobs ?? []}
                     columns={columns}
-                    rowCount={rowCount}
+                    rowCount={data?.count ?? -1}
                     getRowId={(job) => job._id as string}
-                    paginationMeta={paginationMeta}
                     pagination
                     paginationMode="server"
                     paginationModel={paginationModel}
@@ -109,7 +87,7 @@ export default function JobTable({
                     disableRowSelectionOnClick
                     disableColumnResize
                     hideFooterSelectedRowCount
-                    loading={isPending}
+                    loading={isPending || isFetching}
                     slots={{
                         noRowsOverlay: Empty,
                     }}

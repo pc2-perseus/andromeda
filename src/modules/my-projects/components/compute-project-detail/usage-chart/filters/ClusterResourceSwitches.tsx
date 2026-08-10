@@ -46,7 +46,7 @@ export default function ClusterResourceSwitches({
                             label={
                                 <Typography
                                     variant="subtitle1"
-                                    fontWeight={600}
+                                    sx={{ fontWeight: 600 }}
                                 >
                                     {cluster.name}
                                 </Typography>

@@ -1,6 +1,7 @@
 import React from "react";
-import { Navigate, useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import useAuth from "../hooks/useAuth.ts";
+import { saveAuthRedirect } from "../utils/authRedirect.ts";
 
 export default function ProtectedRoute({
     children,
@@ -9,14 +10,23 @@ export default function ProtectedRoute({
 }): React.ReactElement {
     const auth = useAuth();
     const location = useLocation();
+    const navigate = useNavigate();
+
+    const redirectPath = location.pathname + location.search + location.hash;
+
+    React.useEffect(() => {
+        if (auth.validSession) {
+            return;
+        }
+
+        saveAuthRedirect(redirectPath);
+
+        navigate("/login");
+    }, [navigate, auth.validSession, redirectPath]);
 
     if (!auth.validSession) {
-        return (
-            <Navigate
-                to={`/login?next=${encodeURIComponent(location.pathname + location.search)}`}
-                replace
-            />
-        );
+        return <></>;
     }
+
     return children;
 }

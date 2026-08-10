@@ -2,7 +2,7 @@ import React from "react";
 import { alpha, Box, Stack, Typography, useTheme } from "@mui/material";
 import { PieChart } from "@mui/x-charts/PieChart";
 import formatNumber from "../../../../utils/formatNumber.ts";
-import { useClusterResources } from "../ClusterResourcesContext.tsx";
+import useClusterResources from "../useClusterResources.ts";
 
 export default function SnapshotResourcePie({
     name,
@@ -52,7 +52,7 @@ export default function SnapshotResourcePie({
               ];
 
     return (
-        <Stack spacing={0.5} alignItems="center">
+        <Stack spacing={0.5} sx={{ alignItems: "center" }}>
             <Box sx={{ position: "relative", width: 180, height: 104 }}>
                 <PieChart
                     series={[
@@ -65,6 +65,10 @@ export default function SnapshotResourcePie({
                             endAngle: 90,
                             cx: "50%",
                             cy: "82%",
+                            valueFormatter: (item) =>
+                                `${formatNumber(
+                                    item.id === "used" ? used : available
+                                )}${unit}`,
                         },
                     ]}
                     width={180}
@@ -74,8 +78,8 @@ export default function SnapshotResourcePie({
                 />
                 <Stack
                     spacing={0}
-                    alignItems="center"
                     sx={{
+                        alignItems: "center",
                         position: "absolute",
                         left: 0,
                         right: 0,
@@ -84,24 +88,24 @@ export default function SnapshotResourcePie({
                 >
                     <Typography
                         variant="caption"
-                        lineHeight={1}
                         color="text.secondary"
+                        sx={{ lineHeight: 1 }}
                     >
                         {formatNumber(value)}
                         {unit}
                     </Typography>
                     <Typography
                         variant="caption"
-                        lineHeight={1}
                         color="text.secondary"
+                        sx={{ lineHeight: 1 }}
                     >
                         / {formatNumber(max)}
                         {unit}
                     </Typography>
                 </Stack>
             </Box>
-            <Stack spacing={0.25} alignItems="center">
-                <Typography variant="body2" textAlign="center">
+            <Stack spacing={0.25} sx={{ alignItems: "center" }}>
+                <Typography variant="body2" sx={{ textAlign: "center" }}>
                     {name}
                 </Typography>
             </Stack>
